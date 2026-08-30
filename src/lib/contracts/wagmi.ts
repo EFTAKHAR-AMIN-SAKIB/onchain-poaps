@@ -1,0 +1,23 @@
+import { http, createConfig } from "wagmi";
+import { baseSepolia } from "wagmi/chains";
+import { injected } from "wagmi/connectors";
+
+export const wagmiConfig = createConfig({
+  chains: [baseSepolia],
+  connectors: [
+    injected({
+      target: "metaMask",
+    }),
+    injected({
+      target: "coinbaseWallet",
+    }),
+    injected({
+      target: "phantom",
+    }),
+    injected(),
+  ],
+  transports: {
+    [baseSepolia.id]: http("https://sepolia.base.org"),
+  },
+  ssr: true,
+});

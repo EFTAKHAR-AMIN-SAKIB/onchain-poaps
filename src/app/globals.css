@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-main: #ffffff;
+    --bg-surface: #fafafa;
+    --bg-card: #ffffff;
+    --text-main: #09090b;
+    --text-muted: #71717a;
+    --border-color: #e4e4e7;
+    --accent-lime: #bef264;
+  }
+
+  .dark {
+    --bg-main: #09090b;
+    --bg-surface: #121215;
+    --bg-card: #18181b;
+    --text-main: #fafafa;
+    --text-muted: #a1a1aa;
+    --border-color: #27272a;
+    --accent-lime: #a3e635;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Inter", sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: #d9f99d;
+    color: #000000;
+  }
+
+  /* Custom sleek scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #d4d4d8;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a1a1aa;
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background: #3f3f46;
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: #52525b;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(228, 228, 231, 0.8);
+  }
+
+  .dark .glass-card {
+    background: rgba(24, 24, 27, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(39, 39, 42, 0.8);
+  }
+
+  .poap-glow-aura {
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgba(217, 249, 157, 0.5) 0%,
+      rgba(233, 213, 255, 0.4) 45%,
+      rgba(244, 244, 245, 0) 70%
+    );
+  }
+
+  .dark .poap-glow-aura {
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgba(163, 230, 53, 0.25) 0%,
+      rgba(168, 85, 247, 0.2) 45%,
+      rgba(9, 9, 11, 0) 70%
+    );
+  }
+
+  .text-gradient-purple {
+    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}

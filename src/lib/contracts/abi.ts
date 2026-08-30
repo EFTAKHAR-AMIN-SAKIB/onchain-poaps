@@ -1,0 +1,292 @@
+export const ONCHAIN_POAPS_ABI = [
+  // ============ Core Registration & Minting ============
+  {
+    type: "function",
+    name: "registerEvent",
+    inputs: [
+      { name: "name", type: "string", internalType: "string" },
+      { name: "description", type: "string", internalType: "string" },
+      { name: "eventDate", type: "uint256", internalType: "uint256" },
+      { name: "location", type: "string", internalType: "string" },
+      { name: "allowlistRoot", type: "bytes32", internalType: "bytes32" },
+      { name: "svgImage", type: "string", internalType: "string" },
+      { name: "externalUrl", type: "string", internalType: "string" },
+      { name: "flags", type: "uint8", internalType: "uint8" },
+    ],
+    outputs: [{ name: "eventId", type: "uint256", internalType: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "mint",
+    inputs: [{ name: "eventId", type: "uint256", internalType: "uint256" }],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "allowlistMint",
+    inputs: [
+      { name: "eventId", type: "uint256", internalType: "uint256" },
+      { name: "merkleProof", type: "bytes32[]", internalType: "bytes32[]" },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "mintWithSignature",
+    inputs: [
+      { name: "eventId", type: "uint256", internalType: "uint256" },
+      { name: "signature", type: "bytes", internalType: "bytes" },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "creatorMint",
+    inputs: [
+      { name: "eventId", type: "uint256", internalType: "uint256" },
+      { name: "recipients", type: "address[]", internalType: "address[]" },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "updateAllowlistRoot",
+    inputs: [
+      { name: "eventId", type: "uint256", internalType: "uint256" },
+      { name: "newRoot", type: "bytes32", internalType: "bytes32" },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "updateEventPublic",
+    inputs: [
+      { name: "eventId", type: "uint256", internalType: "uint256" },
+      { name: "isPublic", type: "bool", internalType: "bool" },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+
+  // ============ Read / View Functions ============
+  {
+    type: "function",
+    name: "events",
+    inputs: [{ name: "eventId", type: "uint256", internalType: "uint256" }],
+    outputs: [
+      { name: "name", type: "string", internalType: "string" },
+      { name: "description", type: "string", internalType: "string" },
+      { name: "eventDate", type: "uint256", internalType: "uint256" },
+      { name: "location", type: "string", internalType: "string" },
+      { name: "allowlistRoot", type: "bytes32", internalType: "bytes32" },
+      { name: "svgImage", type: "address", internalType: "address" },
+      { name: "creator", type: "address", internalType: "address" },
+      { name: "createdAt", type: "uint256", internalType: "uint256" },
+      { name: "externalUrl", type: "string", internalType: "string" },
+      { name: "isSoulbound", type: "bool", internalType: "bool" },
+      { name: "isPublic", type: "bool", internalType: "bool" },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "hasClaimed",
+    inputs: [
+      { name: "eventId", type: "uint256", internalType: "uint256" },
+      { name: "user", type: "address", internalType: "address" },
+    ],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "totalEvents",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "CREATOR_TIMELOCK",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "uri",
+    inputs: [{ name: "eventId", type: "uint256", internalType: "uint256" }],
+    outputs: [{ name: "", type: "string", internalType: "string" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getMultichainEventId",
+    inputs: [{ name: "eventId", type: "uint256", internalType: "uint256" }],
+    outputs: [{ name: "", type: "string", internalType: "string" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "balanceOf",
+    inputs: [
+      { name: "account", type: "address", internalType: "address" },
+      { name: "id", type: "uint256", internalType: "uint256" },
+    ],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "balanceOfBatch",
+    inputs: [
+      { name: "accounts", type: "address[]", internalType: "address[]" },
+      { name: "ids", type: "uint256[]", internalType: "uint256[]" },
+    ],
+    outputs: [{ name: "", type: "uint256[]", internalType: "uint256[]" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "totalSupply",
+    inputs: [{ name: "id", type: "uint256", internalType: "uint256" }],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "isApprovedForAll",
+    inputs: [
+      { name: "account", type: "address", internalType: "address" },
+      { name: "operator", type: "address", internalType: "address" },
+    ],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "setApprovalForAll",
+    inputs: [
+      { name: "operator", type: "address", internalType: "address" },
+      { name: "approved", type: "bool", internalType: "bool" },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "safeTransferFrom",
+    inputs: [
+      { name: "from", type: "address", internalType: "address" },
+      { name: "to", type: "address", internalType: "address" },
+      { name: "id", type: "uint256", internalType: "uint256" },
+      { name: "value", type: "uint256", internalType: "uint256" },
+      { name: "data", type: "bytes", internalType: "bytes" },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "safeBatchTransferFrom",
+    inputs: [
+      { name: "from", type: "address", internalType: "address" },
+      { name: "to", type: "address", internalType: "address" },
+      { name: "ids", type: "uint256[]", internalType: "uint256[]" },
+      { name: "values", type: "uint256[]", internalType: "uint256[]" },
+      { name: "data", type: "bytes", internalType: "bytes" },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "supportsInterface",
+    inputs: [{ name: "interfaceId", type: "bytes4", internalType: "bytes4" }],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
+    stateMutability: "view",
+  },
+
+  // ============ Events ============
+  {
+    type: "event",
+    name: "NewEvent",
+    inputs: [
+      { name: "eventId", type: "uint256", indexed: true, internalType: "uint256" },
+      { name: "name", type: "string", indexed: false, internalType: "string" },
+      { name: "creator", type: "address", indexed: true, internalType: "address" },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "NewMint",
+    inputs: [
+      { name: "eventId", type: "uint256", indexed: true, internalType: "uint256" },
+      { name: "recipient", type: "address", indexed: true, internalType: "address" },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "AllowlistUpdated",
+    inputs: [
+      { name: "eventId", type: "uint256", indexed: true, internalType: "uint256" },
+      { name: "newRoot", type: "bytes32", indexed: false, internalType: "bytes32" },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "EventPublicUpdated",
+    inputs: [
+      { name: "eventId", type: "uint256", indexed: true, internalType: "uint256" },
+      { name: "isPublic", type: "bool", indexed: false, internalType: "bool" },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "TransferSingle",
+    inputs: [
+      { name: "operator", type: "address", indexed: true, internalType: "address" },
+      { name: "from", type: "address", indexed: true, internalType: "address" },
+      { name: "to", type: "address", indexed: true, internalType: "address" },
+      { name: "id", type: "uint256", indexed: false, internalType: "uint256" },
+      { name: "value", type: "uint256", indexed: false, internalType: "uint256" },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "TransferBatch",
+    inputs: [
+      { name: "operator", type: "address", indexed: true, internalType: "address" },
+      { name: "from", type: "address", indexed: true, internalType: "address" },
+      { name: "to", type: "address", indexed: true, internalType: "address" },
+      { name: "ids", type: "uint256[]", indexed: false, internalType: "uint256[]" },
+      { name: "values", type: "uint256[]", indexed: false, internalType: "uint256[]" },
+    ],
+    anonymous: false,
+  },
+
+  // ============ Custom Errors ============
+  {
+    type: "error",
+    name: "POAP__InvalidValue",
+    inputs: [{ name: "field", type: "string", internalType: "string" }],
+  },
+  { type: "error", name: "POAP__TimeLockExpired", inputs: [] },
+  { type: "error", name: "POAP__OnlyCreator", inputs: [] },
+  { type: "error", name: "POAP__AlreadyClaimed", inputs: [] },
+  { type: "error", name: "POAP__EventNotPublic", inputs: [] },
+  { type: "error", name: "POAP__AllowlistNotEnabled", inputs: [] },
+  { type: "error", name: "POAP__RootAlreadySet", inputs: [] },
+  { type: "error", name: "POAP__SoulboundNotTransferable", inputs: [] },
+] as const;
