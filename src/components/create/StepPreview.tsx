@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { useAccount, useWriteContract } from "wagmi";
 import { decodeEventLog } from "viem";
@@ -10,7 +10,6 @@ import { ONCHAIN_POAPS_ABI } from "@/lib/contracts/abi";
 import { publicClient } from "@/lib/contracts/client";
 import { parseContractError } from "@/lib/utils/errorHandling";
 import { formatEventDate, formatBytes } from "@/lib/utils/formatting";
-import { PoapBadge3D } from "@/components/poap/PoapBadge3D";
 import { Badge } from "@/components/ui/Badge";
 import { EventDetailsForm } from "./StepDetails";
 import { DistributionConfig } from "./StepDistribution";
@@ -22,6 +21,9 @@ import {
   Sparkles,
   ShieldAlert,
   Loader2,
+  ShieldCheck,
+  RotateCcw,
+  ArrowRight,
 } from "lucide-react";
 
 export interface StepPreviewProps {
@@ -29,6 +31,18 @@ export interface StepPreviewProps {
   optimization: OptimizationResult | null;
   details: EventDetailsForm;
   distribution: DistributionConfig;
+}
+
+// Deterministic fingerprint calculation
+function computeSvgFingerprint(svg: string): string {
+  let hash = 0;
+  for (let i = 0; i < svg.length; i++) {
+    const char = svg.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash |= 0;
+  }
+  const hex = Math.abs(hash).toString(16).padStart(8, "0");
+  return `0x${hex}${svg.length.toString(16).padStart(4, "0")}...${hex.slice(-4)}`;
 }
 
 export function StepPreview({
@@ -45,9 +59,11 @@ export function StepPreview({
   const [createdEventId, setCreatedEventId] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const fingerprint = useMemo(() => computeSvgFingerprint(artworkSvg), [artworkSvg]);
+
   const handleRegister = async () => {
     if (!isConnected) {
-      setErrorMessage("Please connect your wallet first.");
+      setErrorMessage("Please connect your wallet to broadcast to Base Sepolia.");
       return;
     }
 
@@ -78,7 +94,7 @@ export function StepPreview({
       setTxHash(hash);
       setTxState("broadcasting");
 
-      // Wait for receipt & parse NewEvent log to extract eventId
+      // Wait for transaction receipt & parse NewEvent log to extract real eventId
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
 
       let foundId: number | null = null;
@@ -99,7 +115,7 @@ export function StepPreview({
         }
       }
 
-      // Fallback: if not parsed from receipt, query totalEvents
+      // Fallback query if log decoding missed
       if (!foundId) {
         const total = await publicClient.readContract({
           address: ONCHAIN_POAPS_ADDRESS,
@@ -115,10 +131,10 @@ export function StepPreview({
       // Trigger celebration confetti
       try {
         confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ["#84cc16", "#3b82f6", "#a855f7", "#ec4899"],
+          particleCount: 120,
+          spread: 80,
+          origin: { y: 0.55 },
+          colors: ["#84cc16", "#3b82f6", "#a855f7", "#ec4899", "#ffffff"],
         });
       } catch {}
     } catch (err: unknown) {
@@ -129,84 +145,115 @@ export function StepPreview({
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 text-neutral-900 dark:text-neutral-100">
-      {/* Success View */}
+    <div className="max-w-4xl mx-auto space-y-8 text-neutral-900 dark:text-neutral-100">
+      {/* ================= SUCCESS REVEAL VIEW ================= */}
       {txState === "success" && createdEventId !== null ? (
-        <div className="p-8 sm:p-12 rounded-3xl bg-white dark:bg-neutral-900 border border-emerald-500/40 text-center space-y-6 shadow-card">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center shadow-xs">
-            <CheckCircle2 className="w-9 h-9" />
+        <div className="p-8 sm:p-12 rounded-3xl bg-white dark:bg-neutral-900 border border-emerald-500/40 text-center space-y-6 shadow-card animate-fade-in">
+          {/* Green Status Badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs font-mono font-semibold border border-emerald-300 dark:border-emerald-800">
+            <CheckCircle2 className="w-4 h-4" />
+            <span>REGISTERED ONCHAIN</span>
           </div>
 
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              POAP Successfully Registered Onchain!
+          <div className="space-y-1">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-white">
+              POAP Created Successfully
             </h2>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
-              Your memory is permanently inscribed on Base Sepolia as{" "}
-              <strong className="text-neutral-900 dark:text-white font-mono">Event #{createdEventId}</strong>.
+            <p className="text-sm font-mono text-neutral-500 dark:text-neutral-400">
+              "{details.name || "Event #" + createdEventId}" is permanently inscribed on Base Sepolia.
             </p>
           </div>
 
-          <div className="flex justify-center my-4">
-            <PoapBadge3D svgContent={artworkSvg} size="md" />
+          {/* 3D Acrylic Plaque Reveal */}
+          <div className="flex justify-center my-6">
+            <div className="w-56 h-56 sm:w-64 sm:h-64 flex items-center justify-center drop-shadow-xl">
+              <div
+                className="w-full h-full flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"
+                dangerouslySetInnerHTML={{ __html: artworkSvg }}
+              />
+            </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-800 max-w-md mx-auto space-y-2 text-xs font-mono">
-            <div className="flex justify-between">
-              <span className="text-neutral-500">Event ID:</span>
+          {/* Onchain Metadata Table */}
+          <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-800 max-w-md mx-auto space-y-2.5 text-xs font-mono text-left">
+            <div className="flex justify-between items-center">
+              <span className="text-neutral-500">EVENT ID:</span>
               <span className="font-bold text-neutral-900 dark:text-white">#{createdEventId}</span>
             </div>
+            <div className="flex justify-between items-center">
+              <span className="text-neutral-500">NETWORK:</span>
+              <span className="text-neutral-900 dark:text-white font-medium">Base Sepolia (84532)</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-neutral-500">STORAGE METHOD:</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-medium">SSTORE2 Bytecode</span>
+            </div>
             {txHash && (
-              <div className="flex justify-between items-center">
-                <span className="text-neutral-500">Transaction:</span>
+              <div className="flex justify-between items-center pt-2 border-t border-neutral-200 dark:border-neutral-800">
+                <span className="text-neutral-500">TRANSACTION:</span>
                 <a
                   href={`${BASE_SEPOLIA_EXPLORER}/tx/${txHash}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-blue-600 hover:underline flex items-center gap-1"
+                  className="text-blue-600 hover:underline flex items-center gap-1 font-semibold"
                 >
-                  {txHash.slice(0, 10)}...{txHash.slice(-6)}
+                  {txHash.slice(0, 8)}...{txHash.slice(-6)}
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
             )}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+          {/* Action CTAs */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-3">
             <Link href={`/poap/${createdEventId}`}>
-              <button className="w-full sm:w-auto px-6 py-3 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all flex items-center justify-center gap-2 shadow-xs">
+              <button className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all flex items-center justify-center gap-2 shadow-xs">
                 <Sparkles className="w-4 h-4 text-lime-400 dark:text-lime-600" />
                 <span>View POAP & Distribution Hub</span>
               </button>
             </Link>
+
             {distribution.method === "signature" && (
               <Link href={`/poap/${createdEventId}/live`}>
-                <button className="w-full sm:w-auto px-6 py-3 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white text-xs font-semibold hover:bg-neutral-50 shadow-xs">
-                  Open Live Event Projector Mode
+                <button className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white text-xs font-semibold hover:bg-neutral-50 shadow-xs">
+                  Open Live Event Screen
                 </button>
               </Link>
             )}
+
+            <button
+              onClick={() => window.location.reload()}
+              className="w-full sm:w-auto px-5 py-3.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors flex items-center justify-center gap-1.5"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Create Another POAP</span>
+            </button>
           </div>
         </div>
       ) : (
-        /* Preview & Confirmation View */
+        /* ================= REVIEW & CONFIRMATION VIEW ================= */
         <div className="space-y-6">
-          <div className="text-center space-y-1">
-            <h2 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
+          <div className="text-center space-y-1.5 max-w-xl mx-auto">
+            <h2 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
               Preview & Confirm Onchain Inscription
             </h2>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Review your artwork, metadata, and distribution settings before broadcasting.
+            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
+              Verify your exact artwork, metadata, and smart contract configuration before broadcasting.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 sm:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-card items-center">
-            {/* Artwork 3D Display */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 p-6 sm:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-card items-center">
+            {/* Artwork Display */}
             <div className="md:col-span-5 flex flex-col items-center justify-center gap-3">
-              <PoapBadge3D svgContent={artworkSvg} size="md" />
+              <div className="w-56 h-56 flex items-center justify-center drop-shadow-lg">
+                <div
+                  className="w-full h-full flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"
+                  dangerouslySetInnerHTML={{ __html: artworkSvg }}
+                />
+              </div>
               {optimization && (
                 <span className="text-[11px] font-mono text-neutral-400">
-                  Storage size: {formatBytes(optimization.optimizedBytes)}
+                  Exact onchain storage: {formatBytes(optimization.optimizedBytes)}
                 </span>
               )}
             </div>
@@ -214,7 +261,7 @@ export function StepPreview({
             {/* Metadata Summary Table */}
             <div className="md:col-span-7 space-y-4 text-left">
               <div>
-                <h3 className="text-xl font-bold text-neutral-900 dark:text-white">
+                <h3 className="text-2xl font-bold text-neutral-900 dark:text-white">
                   {details.name || "Untitled POAP"}
                 </h3>
                 {details.description && (
@@ -224,16 +271,16 @@ export function StepPreview({
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs font-mono">
+              <div className="grid grid-cols-2 gap-3.5 pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs font-mono">
                 <div>
-                  <span className="text-neutral-400 block text-[10px]">TRANSFERABILITY</span>
+                  <span className="text-neutral-400 block text-[10px] mb-1">TRANSFERABILITY</span>
                   <Badge variant={distribution.isSoulbound ? "soulbound" : "default"}>
                     {distribution.isSoulbound ? "Soulbound" : "Transferable"}
                   </Badge>
                 </div>
 
                 <div>
-                  <span className="text-neutral-400 block text-[10px]">DISTRIBUTION</span>
+                  <span className="text-neutral-400 block text-[10px] mb-1">DISTRIBUTION</span>
                   <Badge variant={distribution.isPublic ? "public" : "allowlist"}>
                     {distribution.method.toUpperCase()}
                   </Badge>
@@ -260,7 +307,7 @@ export function StepPreview({
                 )}
 
                 <div>
-                  <span className="text-neutral-400 block text-[10px]">CONTRACT BIT FLAGS</span>
+                  <span className="text-neutral-400 block text-[10px]">BIT FLAGS</span>
                   <span className="text-neutral-900 dark:text-white font-bold">flags = {distribution.flags}</span>
                 </div>
 
@@ -269,23 +316,30 @@ export function StepPreview({
                   <span className="text-neutral-800 dark:text-neutral-200">Base Sepolia (84532)</span>
                 </div>
               </div>
+
+              {/* Artwork Hash Integrity */}
+              <div className="pt-2 flex items-center gap-1.5 text-[11px] font-mono text-neutral-500">
+                <ShieldCheck className="w-3.5 h-3.5 text-lime-600 dark:text-lime-400" />
+                <span>SVG Fingerprint: </span>
+                <span className="font-bold text-neutral-900 dark:text-white">{fingerprint}</span>
+              </div>
             </div>
           </div>
 
-          {/* Important Onchain Permanence Warning */}
-          <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-start gap-3">
-            <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-            <div className="space-y-1 text-left">
-              <div className="text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider">
+          {/* Onchain Inscription Notice */}
+          <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-800 flex items-start gap-3 text-left">
+            <ShieldAlert className="w-5 h-5 text-neutral-600 dark:text-neutral-400 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <div className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
                 Permanent Onchain Inscription
               </div>
-              <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
-                Once registered, the SVG artwork and metadata will be permanently stored on Base Sepolia. The creator control window will be active for 30 days.
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed font-sans">
+                Once registered, the vector artwork is stored directly in Base Sepolia smart contract storage. You will have full creator administration rights for 30 days.
               </p>
             </div>
           </div>
 
-          {/* Error Message */}
+          {/* Error Banner */}
           {errorMessage && (
             <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 text-xs flex items-start gap-2.5 text-left">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -293,7 +347,7 @@ export function StepPreview({
             </div>
           )}
 
-          {/* Action Button */}
+          {/* Main Broadcast Button */}
           <div className="pt-2">
             <button
               onClick={handleRegister}
@@ -302,13 +356,13 @@ export function StepPreview({
             >
               {txState === "signing" ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Confirm in Wallet...</span>
+                  <Loader2 className="w-4 h-4 animate-spin text-lime-400" />
+                  <span>Waiting for Wallet Confirmation...</span>
                 </>
               ) : txState === "broadcasting" ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Inscribing on Base Sepolia...</span>
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
+                  <span>Inscribing to Base Sepolia Smart Contract...</span>
                 </>
               ) : (
                 <>

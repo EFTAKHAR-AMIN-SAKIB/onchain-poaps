@@ -30,8 +30,8 @@ export function PoapBadge3D({
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
-    const rotX = ((y - centerY) / centerY) * -14;
-    const rotY = ((x - centerX) / centerX) * 14;
+    const rotX = ((y - centerY) / centerY) * -12;
+    const rotY = ((x - centerX) / centerX) * 12;
 
     setRotateX(rotX);
     setRotateY(rotY);
@@ -67,18 +67,21 @@ export function PoapBadge3D({
         onMouseLeave={handleMouseLeave}
         style={{
           transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
-          transition: interactive && rotateX === 0 && rotateY === 0 ? "transform 0.5s ease-out" : "transform 0.1s ease-out",
+          transition:
+            interactive && rotateX === 0 && rotateY === 0
+              ? "transform 0.5s ease-out"
+              : "transform 0.08s ease-out",
         }}
         className={clsx(
-          "relative rounded-full overflow-hidden shadow-2xl flex items-center justify-center p-2 bg-[#0c0d12] border border-white/10 group",
+          "relative flex items-center justify-center p-2 group",
           sizeClasses[size]
         )}
       >
         {/* Dynamic Specular Glare Overlay */}
         <div
-          className="pointer-events-none absolute inset-0 rounded-full z-10 transition-opacity duration-300"
+          className="pointer-events-none absolute inset-0 rounded-3xl z-10 transition-opacity duration-300"
           style={{
-            background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y}%, rgba(255,255,255,0.4) 0%, rgba(212,175,55,0.2) 25%, transparent 60%)`,
+            background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y}%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.1) 30%, transparent 65%)`,
             opacity: glarePosition.opacity,
           }}
         />
@@ -86,11 +89,11 @@ export function PoapBadge3D({
         {/* SVG Container */}
         {svgContent ? (
           <div
-            className="w-full h-full rounded-full overflow-hidden flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:max-w-full [&>svg]:max-h-full"
+            className="w-full h-full flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:max-w-full [&>svg]:max-h-full drop-shadow-[0_12px_24px_rgba(0,0,0,0.08)] dark:drop-shadow-[0_12px_24px_rgba(0,0,0,0.4)]"
             dangerouslySetInnerHTML={{ __html: svgContent }}
           />
         ) : (
-          <div className="w-full h-full rounded-full bg-[#161820] flex items-center justify-center text-slate-500 font-mono text-xs text-center p-4">
+          <div className="w-full h-full rounded-3xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-400 font-mono text-xs text-center p-4">
             Loading Artwork...
           </div>
         )}

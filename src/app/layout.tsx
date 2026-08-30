@@ -70,8 +70,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100 antialiased min-h-screen flex flex-col">
+    <html lang="en" suppressHydrationWarning>
+      <body
+        suppressHydrationWarning
+        className="bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100 antialiased min-h-screen flex flex-col"
+      >
         <Web3Provider>
           <Navbar />
           <main className="flex-1 w-full">{children}</main>

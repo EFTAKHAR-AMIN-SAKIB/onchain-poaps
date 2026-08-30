@@ -16,6 +16,7 @@ import {
   FileSpreadsheet,
   CheckCircle2,
   HelpCircle,
+  Sparkles,
 } from "lucide-react";
 
 export type DistributionMethod = "public" | "allowlist" | "signature" | "creator";
@@ -32,10 +33,11 @@ export interface DistributionConfig {
 
 export interface StepDistributionProps {
   config: DistributionConfig;
+  artworkSvg?: string;
   onChange: (config: DistributionConfig) => void;
 }
 
-export function StepDistribution({ config, onChange }: StepDistributionProps) {
+export function StepDistribution({ config, artworkSvg, onChange }: StepDistributionProps) {
   const [showTechnicalDetails, setShowTechnicalDetails] = useState(false);
   const [allowlistInput, setAllowlistInput] = useState(config.allowlistRawText || "");
   const [merkleResult, setMerkleResult] = useState<MerkleTreeResult | null>(config.allowlistResult || null);
@@ -96,7 +98,7 @@ export function StepDistribution({ config, onChange }: StepDistributionProps) {
       title: "Open to Everyone",
       subtitle: "Public Mint",
       description:
-        "Anyone with a wallet can claim 1 POAP immediately. You can toggle public mint on or off anytime during the 30-day creator window.",
+        "Anyone with a connected wallet can claim 1 POAP immediately. You can toggle public mint on or off anytime during the 30-day creator window.",
       icon: Globe,
       colorBg: "bg-lime-100 dark:bg-lime-950/50",
       colorText: "text-lime-700 dark:text-lime-300",
@@ -138,22 +140,22 @@ export function StepDistribution({ config, onChange }: StepDistributionProps) {
   ];
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 text-neutral-900 dark:text-neutral-100">
-      <div className="text-center space-y-1">
-        <h2 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
+    <div className="max-w-4xl mx-auto space-y-8 text-neutral-900 dark:text-neutral-100">
+      <div className="text-center space-y-1.5 max-w-xl mx-auto">
+        <h2 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
           Distribution Strategy & Rules
         </h2>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          Choose how attendees will receive this POAP and set token transferability.
+        <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
+          Choose how attendees will claim this collectible and set token transferability.
         </p>
       </div>
 
       {/* 1. Distribution Method Cards */}
       <div className="space-y-3">
-        <div className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-500">
+        <div className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-500 text-left">
           How should people receive this POAP?
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
           {distributionOptions.map((opt) => {
             const Icon = opt.icon;
             const isSelected = config.method === opt.id;
@@ -180,7 +182,7 @@ export function StepDistribution({ config, onChange }: StepDistributionProps) {
                       <Icon className="w-5 h-5" />
                     </div>
                     <span
-                      className={`text-[10px] font-mono font-medium px-2 py-0.5 rounded-full ${
+                      className={`text-[10px] font-mono font-medium px-2.5 py-0.5 rounded-full ${
                         isSelected
                           ? "bg-white/20 dark:bg-neutral-900/10 text-white dark:text-neutral-900"
                           : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
@@ -204,7 +206,7 @@ export function StepDistribution({ config, onChange }: StepDistributionProps) {
                     {opt.subtitle}
                   </div>
                   <p
-                    className={`text-xs mt-2 leading-relaxed ${
+                    className={`text-xs mt-2.5 leading-relaxed ${
                       isSelected ? "text-neutral-300 dark:text-neutral-600" : "text-neutral-500 dark:text-neutral-400"
                     }`}
                   >
@@ -219,7 +221,7 @@ export function StepDistribution({ config, onChange }: StepDistributionProps) {
 
       {/* Allowlist Upload Subsection */}
       {config.method === "allowlist" && (
-        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-card space-y-4">
+        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-card space-y-4 text-left">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FileSpreadsheet className="w-4 h-4 text-blue-500" />
@@ -261,7 +263,7 @@ export function StepDistribution({ config, onChange }: StepDistributionProps) {
       )}
 
       {/* 2. Transferability Choice */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-card space-y-4">
+      <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-card space-y-4 text-left">
         <div className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-500">
           Token Transferability
         </div>
@@ -309,7 +311,7 @@ export function StepDistribution({ config, onChange }: StepDistributionProps) {
       </div>
 
       {/* 3. Technical Contract Bit Flags Expandable Section */}
-      <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-800">
+      <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-800 text-left">
         <button
           type="button"
           onClick={() => setShowTechnicalDetails(!showTechnicalDetails)}

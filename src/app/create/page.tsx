@@ -6,7 +6,7 @@ import { StepDetails, EventDetailsForm } from "@/components/create/StepDetails";
 import { StepDistribution, DistributionConfig } from "@/components/create/StepDistribution";
 import { StepPreview } from "@/components/create/StepPreview";
 import { OptimizationResult } from "@/lib/svg/optimizer";
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
 
 export default function CreatePage() {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
@@ -16,10 +16,10 @@ export default function CreatePage() {
   const [optimization, setOptimization] = useState<OptimizationResult | null>(null);
 
   const [details, setDetails] = useState<EventDetailsForm>({
-    name: "ETHGlobal Denver 2026",
-    description: "Commemorating active participation and attendance in the annual Ethereum Denver hackathon.",
+    name: "ETHGlobal New York 2026",
+    description: "Commemorating active participation, innovation, and attendance at the annual Ethereum New York Hackathon.",
     eventDate: new Date().toISOString().split("T")[0],
-    location: "Denver, Colorado",
+    location: "New York, USA",
     externalUrl: "https://ethglobal.com",
   });
 
@@ -34,10 +34,10 @@ export default function CreatePage() {
   });
 
   const steps = [
-    { num: 1, title: "Artwork", subtitle: "Vector Studio" },
+    { num: 1, title: "Artwork", subtitle: "Acrylic Studio" },
     { num: 2, title: "Details", subtitle: "Event Metadata" },
-    { num: 3, title: "Distribution", subtitle: "Access & Flags" },
-    { num: 4, title: "Review", subtitle: "Onchain Storage" },
+    { num: 3, title: "Distribution", subtitle: "Access & Rules" },
+    { num: 4, title: "Review", subtitle: "Onchain Register" },
   ];
 
   const handleArtworkChange = useCallback((svgCode: string, opt: OptimizationResult) => {
@@ -105,18 +105,18 @@ export default function CreatePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-8 py-12 space-y-10 text-neutral-900 dark:text-neutral-100">
-      {/* Header */}
+      {/* Header matching exact copy requirements */}
       <div className="text-center space-y-2 max-w-2xl mx-auto">
-        <h1 className="font-bold text-3xl sm:text-4xl tracking-tight text-neutral-900 dark:text-white">
-          Create a POAP
+        <h1 className="font-extrabold text-3xl sm:text-4xl lg:text-5xl tracking-tight text-neutral-900 dark:text-white uppercase font-sans">
+          CREATE A POAP
         </h1>
-        <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
-          Your artwork and metadata are stored 100% onchain — permanently. Take a minute to get them right.
+        <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400 font-normal">
+          Design a collectible that lives permanently onchain.
         </p>
       </div>
 
-      {/* Step Progress Bar */}
-      <div className="max-w-4xl mx-auto bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-2 shadow-card">
+      {/* 4-Step Progress System */}
+      <div className="max-w-4xl mx-auto bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-1.5 shadow-card">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
           {steps.map((step) => {
             const isDone = currentStep > step.num;
@@ -125,6 +125,7 @@ export default function CreatePage() {
             return (
               <button
                 key={step.num}
+                type="button"
                 onClick={() => {
                   if (step.num < currentStep) setCurrentStep(step.num as any);
                   else if (step.num === 2 && currentStep === 1 && artworkSvg) setCurrentStep(2);
@@ -134,7 +135,7 @@ export default function CreatePage() {
                   isCurrent
                     ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-xs font-semibold"
                     : isDone
-                    ? "bg-neutral-50 dark:bg-neutral-800/60 text-neutral-800 dark:text-neutral-200"
+                    ? "bg-neutral-50 dark:bg-neutral-850 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100"
                     : "text-neutral-400 dark:text-neutral-600 opacity-60 cursor-not-allowed"
                 }`}
               >
@@ -154,7 +155,7 @@ export default function CreatePage() {
                     {step.title}
                   </div>
                 </div>
-                <div className="text-[11px] opacity-70 mt-1 truncate pl-7">
+                <div className="text-[10px] opacity-70 mt-1 truncate pl-7 font-mono">
                   {step.subtitle}
                 </div>
               </button>
@@ -163,8 +164,8 @@ export default function CreatePage() {
         </div>
       </div>
 
-      {/* Step Content Card */}
-      <div className="p-6 sm:p-10 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-3xl shadow-card">
+      {/* Step Content Container */}
+      <div>
         {currentStep === 1 && (
           <StepArtwork
             initialTitle={details.name}
@@ -176,6 +177,7 @@ export default function CreatePage() {
           <StepDetails
             formData={details}
             errors={detailsErrors}
+            artworkSvg={artworkSvg}
             onChange={handleDetailChange}
           />
         )}
@@ -183,6 +185,7 @@ export default function CreatePage() {
         {currentStep === 3 && (
           <StepDistribution
             config={distribution}
+            artworkSvg={artworkSvg}
             onChange={(cfg) => setDistribution(cfg)}
           />
         )}
@@ -197,7 +200,7 @@ export default function CreatePage() {
         )}
 
         {/* Step Navigation Bar */}
-        <div className="pt-8 mt-8 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto pt-8 mt-8 border-t border-neutral-200/80 dark:border-neutral-800 flex items-center justify-between">
           {currentStep > 1 ? (
             <button
               onClick={handleBack}
