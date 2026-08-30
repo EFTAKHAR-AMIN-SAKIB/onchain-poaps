@@ -1,14 +1,12 @@
-import {
-  createPublicClient,
-  http,
-  fallback,
-  decodeEventLog,
-  getAddress,
-  Hex,
-} from "viem";
+import { createPublicClient, http, Hex, getAddress } from "viem";
 import { baseSepolia } from "viem/chains";
-import { ONCHAIN_POAPS_ADDRESS, BASE_SEPOLIA_RPC_URLS } from "./address";
+import { ONCHAIN_POAPS_ADDRESS } from "./address";
 import { ONCHAIN_POAPS_ABI } from "./abi";
+
+export const publicClient = createPublicClient({
+  chain: baseSepolia,
+  transport: http(process.env.NEXT_PUBLIC_RPC_URL || "https://sepolia.base.org"),
+});
 
 export interface PoapEventData {
   eventId: number;
@@ -18,47 +16,79 @@ export interface PoapEventData {
   location: string;
   allowlistRoot: Hex;
   svgImagePointer: string;
-  creator: `0x${string}`;
+  creator: string;
   createdAt: number;
   externalUrl: string;
   isSoulbound: boolean;
   isPublic: boolean;
   rawSvg?: string;
-  totalSupply?: number;
-  multichainId?: string;
+  totalSupply: number;
+  multichainId: string; // CAIP-2 eip155:84532:...
 }
 
 export interface PoapMetadata {
   name: string;
   description: string;
-  image: string; // data:image/svg+xml;base64,...
-  external_url: string;
-  attributes: Array<{
-    trait_type: string;
-    value: string;
-    display_type?: string;
-  }>;
+  image: string;
+  external_url?: string;
+  attributes?: Array<{ trait_type: string; value: string | number | boolean }>;
 }
 
-// Create redundant fallback public client for high reliability
-export const publicClient = createPublicClient({
-  chain: baseSepolia,
-  transport: fallback(
-    BASE_SEPOLIA_RPC_URLS.map((url) =>
-      http(url, {
-        batch: {
-          batchSize: 100,
-          wait: 20,
-        },
-      })
-    )
-  ),
-});
+/**
+ * Safely decodes a Base64 string to a UTF-8 string across both browser and Node.js
+ */
+function decodeBase64Utf8(base64Str: string): string {
+  try {
+    const cleanBase64 = base64Str.trim().replace(/\s/g, "");
+    if (typeof window !== "undefined") {
+      const binary = atob(cleanBase64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      return new TextDecoder("utf-8").decode(bytes);
+    } else {
+      return Buffer.from(cleanBase64, "base64").toString("utf-8");
+    }
+  } catch {
+    try {
+      return typeof window !== "undefined"
+        ? atob(base64Str)
+        : Buffer.from(base64Str, "base64").toString("utf-8");
+    } catch {
+      return "";
+    }
+  }
+}
 
 /**
- * Fetches total number of registered events from contract.
+ * Robust JSON parser that handles raw unescaped control characters in JSON strings.
  */
-export async function fetchTotalEvents(): Promise<number> {
+function safeJsonParse<T>(rawString: string): T | null {
+  if (!rawString) return null;
+  try {
+    return JSON.parse(rawString);
+  } catch {
+    try {
+      // Sanitize raw unescaped newlines, tabs, and control characters (ASCII 0x00-0x1F)
+      const sanitized = rawString.replace(/[\u0000-\u001F]+/g, (match) => {
+        if (match === "\n") return "\\n";
+        if (match === "\r") return "\\r";
+        if (match === "\t") return "\\t";
+        return " ";
+      });
+      return JSON.parse(sanitized);
+    } catch (err) {
+      console.warn("safeJsonParse failed to parse JSON:", err);
+      return null;
+    }
+  }
+}
+
+/**
+ * Reads total number of registered POAP events from the smart contract.
+ */
+export async function getTotalEvents(): Promise<number> {
   try {
     const total = await publicClient.readContract({
       address: ONCHAIN_POAPS_ADDRESS,
@@ -73,21 +103,45 @@ export async function fetchTotalEvents(): Promise<number> {
 }
 
 /**
- * Decodes the onchain Base64 JSON metadata returned by uri(eventId).
+ * Decodes the onchain JSON metadata returned by uri(eventId).
  */
-export function decodeMetadataUri(uriString: string): { metadata: PoapMetadata | null; svgString: string | null } {
+export function decodeMetadataUri(uriString: string): {
+  metadata: PoapMetadata | null;
+  svgString: string | null;
+} {
   try {
     if (!uriString) return { metadata: null, svgString: null };
 
-    // Format is: data:application/json;base64,...
-    const base64Json = uriString.replace(/^data:application\/json;base64,/, "");
-    const jsonText = typeof window !== "undefined" ? atob(base64Json) : Buffer.from(base64Json, "base64").toString("utf-8");
-    const metadata: PoapMetadata = JSON.parse(jsonText);
+    let jsonText = "";
 
+    if (uriString.startsWith("data:application/json;base64,")) {
+      const base64Json = uriString.replace(/^data:application\/json;base64,/, "");
+      jsonText = decodeBase64Utf8(base64Json);
+    } else if (uriString.startsWith("data:application/json;utf8,")) {
+      jsonText = decodeURIComponent(uriString.replace(/^data:application\/json;utf8,/, ""));
+    } else if (uriString.startsWith("data:application/json,")) {
+      jsonText = decodeURIComponent(uriString.replace(/^data:application\/json,/, ""));
+    } else if (uriString.trim().startsWith("{")) {
+      jsonText = uriString;
+    } else {
+      // Attempt base64 decode directly
+      jsonText = decodeBase64Utf8(uriString);
+    }
+
+    const metadata = safeJsonParse<PoapMetadata>(jsonText);
     let svgString: string | null = null;
-    if (metadata.image && metadata.image.startsWith("data:image/svg+xml;base64,")) {
-      const base64Svg = metadata.image.replace(/^data:image\/svg\+xml;base64,/, "");
-      svgString = typeof window !== "undefined" ? atob(base64Svg) : Buffer.from(base64Svg, "base64").toString("utf-8");
+
+    if (metadata && metadata.image) {
+      if (metadata.image.startsWith("data:image/svg+xml;base64,")) {
+        const base64Svg = metadata.image.replace(/^data:image\/svg\+xml;base64,/, "");
+        svgString = decodeBase64Utf8(base64Svg);
+      } else if (metadata.image.startsWith("data:image/svg+xml;utf8,")) {
+        svgString = decodeURIComponent(metadata.image.replace(/^data:image\/svg\+xml;utf8,/, ""));
+      } else if (metadata.image.startsWith("data:image/svg+xml,")) {
+        svgString = decodeURIComponent(metadata.image.replace(/^data:image\/svg\+xml,/, ""));
+      } else if (metadata.image.trim().startsWith("<svg")) {
+        svgString = metadata.image;
+      }
     }
 
     return { metadata, svgString };
@@ -178,32 +232,53 @@ export async function fetchPoapEvent(eventId: number): Promise<PoapEventData | n
 /**
  * Checks if a specific address has claimed an event.
  */
-export async function checkHasClaimed(eventId: number, userAddress: `0x${string}`): Promise<boolean> {
+export async function checkHasClaimed(eventId: number, userAddress: string): Promise<boolean> {
   try {
-    return await publicClient.readContract({
+    const claimed = await publicClient.readContract({
       address: ONCHAIN_POAPS_ADDRESS,
       abi: ONCHAIN_POAPS_ABI,
       functionName: "hasClaimed",
-      args: [BigInt(eventId), getAddress(userAddress)],
+      args: [BigInt(eventId), userAddress as Hex],
     });
-  } catch {
+    return Boolean(claimed);
+  } catch (err) {
+    console.error("Error checking hasClaimed:", err);
     return false;
   }
 }
 
 /**
- * Checks the balance of an address for a specific POAP event ID.
+ * Checks if public mint is active (within 30-day window).
  */
-export async function checkBalanceOf(userAddress: `0x${string}`, eventId: number): Promise<number> {
+export async function checkIsPublicMintActive(eventId: number): Promise<boolean> {
   try {
-    const balance = await publicClient.readContract({
+    const active = await publicClient.readContract({
       address: ONCHAIN_POAPS_ADDRESS,
       abi: ONCHAIN_POAPS_ABI,
-      functionName: "balanceOf",
-      args: [getAddress(userAddress), BigInt(eventId)],
+      functionName: "isPublicMintActive",
+      args: [BigInt(eventId)],
     });
-    return Number(balance);
-  } catch {
-    return 0;
+    return Boolean(active);
+  } catch (err) {
+    console.error("Error checking isPublicMintActive:", err);
+    return false;
+  }
+}
+
+/**
+ * Checks if signature mint is active (within 37-day window).
+ */
+export async function checkIsSignatureMintActive(eventId: number): Promise<boolean> {
+  try {
+    const active = await publicClient.readContract({
+      address: ONCHAIN_POAPS_ADDRESS,
+      abi: ONCHAIN_POAPS_ABI,
+      functionName: "isSignatureMintActive",
+      args: [BigInt(eventId)],
+    });
+    return Boolean(active);
+  } catch (err) {
+    console.error("Error checking isSignatureMintActive:", err);
+    return false;
   }
 }
