@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import Link from "next/link";
 import {
   Shield,
   QrCode,
@@ -12,18 +11,21 @@ import {
   Pause,
   RotateCcw,
   Sparkles,
-  Layers,
 } from "lucide-react";
 
 export function GlassPlaqueHero() {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Rotation angles in degrees
+  // Plaque 3D rotation angles in degrees
   const [rotY, setRotY] = useState(-14);
   const [rotX, setRotX] = useState(10);
   const [isAutoSpin, setIsAutoSpin] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
   const [activeNode, setActiveNode] = useState<string | null>(null);
+
+  // Orbital motion time (radians)
+  const [orbitAngle, setOrbitAngle] = useState(0);
+  const [isOrbitHovered, setIsOrbitHovered] = useState(false);
 
   // Drag physics tracking
   const dragRef = useRef({
@@ -34,7 +36,6 @@ export function GlassPlaqueHero() {
     startRotX: 10,
     lastX: 0,
     lastY: 0,
-    velocity: 0,
   });
 
   const animFrameRef = useRef<number | null>(null);
@@ -76,7 +77,7 @@ export function GlassPlaqueHero() {
 
   const currentEvent = sampleEvents[currentEventIndex];
 
-  // Auto-spin animation loop
+  // Continuous animation loop for Plaque 360° spin AND Orbital Node Motion
   useEffect(() => {
     let lastTime = performance.now();
 
@@ -84,9 +85,15 @@ export function GlassPlaqueHero() {
       const delta = (currentTime - lastTime) / 1000;
       lastTime = currentTime;
 
+      // 1. Plaque auto-spin
       if (isAutoSpin && !dragRef.current.isDown) {
-        setRotY((prev) => (prev + delta * 18) % 360);
+        setRotY((prev) => (prev + delta * 16) % 360);
       }
+
+      // 2. Orbital nodes revolution around plaque (~18s full period)
+      // Slow down to gentle cruise speed when hovering over a node
+      const orbitSpeed = isOrbitHovered ? 0.08 : 0.28;
+      setOrbitAngle((prev) => (prev + delta * orbitSpeed) % (Math.PI * 2));
 
       animFrameRef.current = requestAnimationFrame(animate);
     };
@@ -96,11 +103,10 @@ export function GlassPlaqueHero() {
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [isAutoSpin]);
+  }, [isAutoSpin, isOrbitHovered]);
 
   // Pointer event handlers for drag / touch 360° spin
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    // Only drag with primary mouse button or touch
     if (e.button !== 0 && e.pointerType === "mouse") return;
 
     dragRef.current = {
@@ -111,7 +117,6 @@ export function GlassPlaqueHero() {
       startRotX: rotX,
       lastX: e.clientX,
       lastY: e.clientY,
-      velocity: 0,
     };
     setIsDragging(true);
 
@@ -126,7 +131,6 @@ export function GlassPlaqueHero() {
     const deltaX = e.clientX - dragRef.current.startX;
     const deltaY = e.clientY - dragRef.current.startY;
 
-    // 1px move corresponds to ~0.55 deg rotation
     const newRotY = dragRef.current.startRotY + deltaX * 0.55;
     const newRotX = Math.max(
       -35,
@@ -154,7 +158,90 @@ export function GlassPlaqueHero() {
     setRotX(10);
   };
 
-  // Calculate dynamic glare based on rotation
+  // Orbital Parametric Mathematics
+  // Center (280, 240), Semi-major axis Rx = 230, Semi-minor axis Ry = 140, Tilt phi = -22deg
+  const ORBIT_CENTER = { x: 280, y: 240 };
+  const ORBIT_RX = 228;
+  const ORBIT_RY = 142;
+  const ORBIT_TILT_RAD = (-22 * Math.PI) / 180;
+
+  const calculateOrbitalPosition = useCallback(
+    (offsetAngleRad: number) => {
+      const theta = orbitAngle + offsetAngleRad;
+
+      // Coordinate on untilted ellipse
+      const u = ORBIT_RX * Math.cos(theta);
+      const v = ORBIT_RY * Math.sin(theta);
+
+      // Rotate by orbit plane tilt angle
+      const cosPhi = Math.cos(ORBIT_TILT_RAD);
+      const sinPhi = Math.sin(ORBIT_TILT_RAD);
+
+      const x = ORBIT_CENTER.x + (u * cosPhi - v * sinPhi);
+      const y = ORBIT_CENTER.y + (u * sinPhi + v * cosPhi);
+
+      // Depth z: range -1 to 1. Positive means in front of plaque, negative means behind
+      const z = Math.sin(theta);
+
+      // Scale & opacity based on depth
+      const scale = 0.9 + 0.22 * ((z + 1) / 2);
+      const opacity = 0.75 + 0.25 * ((z + 1) / 2);
+      const zIndex = z > 0 ? 35 : 5; // Layer in front or behind the 3D acrylic plaque
+
+      return { x, y, z, scale, opacity, zIndex, theta };
+    },
+    [orbitAngle]
+  );
+
+  // 4 Orbital Nodes Configuration with 90° angular offsets
+  const orbitalNodes = [
+    {
+      id: "shield",
+      title: "100% Onchain Bytecode",
+      angleOffset: 0, // Top-Left start region
+      icon: Shield,
+      bg: "bg-[#f4fce3] dark:bg-lime-950/60",
+      border: "border-lime-300 dark:border-lime-700",
+      glow: "shadow-[0_0_24px_rgba(163,230,53,0.55)]",
+      text: "text-lime-700 dark:text-lime-300",
+      pos: calculateOrbitalPosition((140 * Math.PI) / 180),
+    },
+    {
+      id: "link",
+      title: "CAIP-2 Multichain Reference",
+      angleOffset: Math.PI / 2, // Top-Right region
+      icon: Link2,
+      bg: "bg-[#f3e8ff] dark:bg-purple-950/60",
+      border: "border-purple-300 dark:border-purple-700",
+      glow: "shadow-[0_0_24px_rgba(168,85,247,0.5)]",
+      text: "text-purple-700 dark:text-purple-300",
+      pos: calculateOrbitalPosition((50 * Math.PI) / 180),
+    },
+    {
+      id: "lock",
+      title: "Soulbound Immutable Record",
+      angleOffset: Math.PI, // Bottom-Right region
+      icon: Lock,
+      bg: "bg-[#f4fce3] dark:bg-lime-950/60",
+      border: "border-lime-300 dark:border-lime-700",
+      glow: "shadow-[0_0_24px_rgba(163,230,53,0.55)]",
+      text: "text-lime-700 dark:text-lime-300",
+      pos: calculateOrbitalPosition((-40 * Math.PI) / 180),
+    },
+    {
+      id: "qr",
+      title: "Live Stage QR Mode",
+      angleOffset: (3 * Math.PI) / 2, // Bottom-Left region
+      icon: QrCode,
+      bg: "bg-[#e0f2fe] dark:bg-sky-950/60",
+      border: "border-sky-300 dark:border-sky-700",
+      glow: "shadow-[0_0_24px_rgba(56,189,248,0.5)]",
+      text: "text-sky-700 dark:text-sky-300",
+      pos: calculateOrbitalPosition((-130 * Math.PI) / 180),
+    },
+  ];
+
+  // Dynamic glare calculation
   const normalizedY = ((rotY % 360) + 360) % 360;
   const isFrontFacing = normalizedY < 90 || normalizedY > 270;
   const glareX = 50 + Math.sin((normalizedY * Math.PI) / 180) * 40;
@@ -169,7 +256,7 @@ export function GlassPlaqueHero() {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-        className={`relative w-full h-[470px] sm:h-[530px] flex items-center justify-center cursor-grab active:cursor-grabbing touch-none ${
+        className={`relative w-full h-[480px] sm:h-[540px] flex items-center justify-center cursor-grab active:cursor-grabbing touch-none ${
           isDragging ? "cursor-grabbing" : ""
         }`}
         style={{ perspective: "1400px" }}
@@ -187,152 +274,117 @@ export function GlassPlaqueHero() {
         />
 
         {/* Ambient Multi-Color Pastel Glow Aura */}
-        <div className="absolute w-[340px] sm:w-[440px] h-[340px] sm:h-[440px] rounded-full bg-gradient-to-tr from-lime-200/50 via-purple-200/40 to-blue-200/40 dark:from-lime-900/30 dark:via-purple-900/20 dark:to-blue-900/20 blur-3xl -z-10 pointer-events-none" />
+        <div className="absolute w-[360px] sm:w-[460px] h-[360px] sm:h-[460px] rounded-full bg-gradient-to-tr from-lime-200/50 via-purple-200/40 to-blue-200/40 dark:from-lime-900/30 dark:via-purple-900/20 dark:to-blue-900/20 blur-3xl -z-10 pointer-events-none" />
 
-        {/* Constellation & Orbital Network (SVG) */}
+        {/* SVG Constellation & Orbital Ellipse Network */}
         <svg
-          className="absolute inset-0 w-full h-full pointer-events-none -z-10 overflow-visible"
+          className="absolute inset-0 w-full h-full pointer-events-none overflow-visible"
           viewBox="0 0 560 560"
           fill="none"
+          style={{ zIndex: 10 }}
         >
-          {/* Orbital Ellipse 1 */}
+          {/* Main Primary Orbital Ellipse Track */}
           <ellipse
-            cx="280"
-            cy="280"
-            rx="245"
-            ry="145"
-            transform="rotate(-20 280 280)"
+            cx={ORBIT_CENTER.x}
+            cy={ORBIT_CENTER.y}
+            rx={ORBIT_RX}
+            ry={ORBIT_RY}
+            transform={`rotate(-22 ${ORBIT_CENTER.x} ${ORBIT_CENTER.y})`}
             stroke="#d4d4d8"
-            strokeWidth="1"
+            strokeWidth="1.2"
             strokeDasharray="4 6"
-            className="dark:stroke-neutral-800 opacity-70"
+            className="dark:stroke-neutral-800 opacity-80"
           />
 
-          {/* Orbital Ellipse 2 */}
+          {/* Secondary Counter-Tilted Outer Ellipse */}
           <ellipse
-            cx="280"
-            cy="280"
-            rx="210"
-            ry="110"
-            transform="rotate(35 280 280)"
+            cx={ORBIT_CENTER.x}
+            cy={ORBIT_CENTER.y}
+            rx="215"
+            ry="115"
+            transform={`rotate(38 ${ORBIT_CENTER.x} ${ORBIT_CENTER.y})`}
             stroke="#e4e4e7"
             strokeWidth="1"
-            className="dark:stroke-neutral-850 opacity-60"
+            className="dark:stroke-neutral-850 opacity-50"
           />
 
-          {/* Connecting Constellation Curves */}
+          {/* Dynamic Constellation Tether Curves connecting orbiting nodes */}
           <path
-            d="M 90 120 Q 180 80, 270 120 T 460 170"
-            stroke="#e2e8f0"
-            strokeWidth="1"
+            d={`M ${orbitalNodes[0].pos.x} ${orbitalNodes[0].pos.y} Q ${ORBIT_CENTER.x} 100, ${orbitalNodes[1].pos.x} ${orbitalNodes[1].pos.y}`}
+            stroke="#cbd5e1"
+            strokeWidth="0.8"
             strokeDasharray="2 4"
-            className="dark:stroke-neutral-800"
+            className="dark:stroke-neutral-800 opacity-60"
           />
           <path
-            d="M 120 420 Q 240 480, 380 430 T 470 360"
-            stroke="#e2e8f0"
-            strokeWidth="1"
+            d={`M ${orbitalNodes[2].pos.x} ${orbitalNodes[2].pos.y} Q ${ORBIT_CENTER.x} 420, ${orbitalNodes[3].pos.x} ${orbitalNodes[3].pos.y}`}
+            stroke="#cbd5e1"
+            strokeWidth="0.8"
             strokeDasharray="2 4"
-            className="dark:stroke-neutral-800"
+            className="dark:stroke-neutral-800 opacity-60"
           />
 
-          {/* Glowing Constellation Stars */}
-          <circle cx="160" cy="140" r="2.5" fill="#a1a1aa" className="animate-pulse" />
-          <circle cx="410" cy="120" r="2" fill="#a1a1aa" />
-          <circle cx="430" cy="420" r="2.5" fill="#a1a1aa" className="animate-pulse" />
-          <circle cx="140" cy="340" r="2" fill="#a1a1aa" />
+          {/* Glowing Constellation Star Particles */}
+          <circle cx="160" cy="130" r="2" fill="#a1a1aa" className="animate-pulse" />
+          <circle cx="420" cy="115" r="2" fill="#a1a1aa" />
+          <circle cx="435" cy="410" r="2" fill="#a1a1aa" className="animate-pulse" />
+          <circle cx="130" cy="350" r="2" fill="#a1a1aa" />
         </svg>
 
-        {/* 4 Interactive Orbital Feature Nodes */}
-        {/* 1. Top-Left Node: Shield */}
-        <div
-          className="absolute top-6 left-6 sm:top-8 sm:left-12 z-30 group cursor-pointer"
-          onMouseEnter={() => setActiveNode("shield")}
-          onMouseLeave={() => setActiveNode(null)}
-          onClick={(e) => {
-            e.stopPropagation();
-            setCurrentEventIndex((prev) => (prev + 1) % sampleEvents.length);
-          }}
-        >
-          <div className="relative">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#f4fce3] dark:bg-lime-950/60 border border-lime-300 dark:border-lime-700 shadow-[0_0_20px_rgba(163,230,53,0.45)] flex items-center justify-center text-lime-700 dark:text-lime-300 transition-transform duration-200 group-hover:scale-115">
-              <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
-            {activeNode === "shield" && (
-              <div className="absolute top-12 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-neutral-900 text-white text-[10px] font-mono rounded-lg whitespace-nowrap shadow-lg z-40">
-                100% Onchain Bytecode
-              </div>
-            )}
-          </div>
-        </div>
+        {/* 4 DYNAMIC MOVING ORBITAL NODES REVOLVING IN 3D SPACE */}
+        {orbitalNodes.map((node) => {
+          const IconComp = node.icon;
+          const { x, y, scale, opacity, zIndex } = node.pos;
+          const isHovered = activeNode === node.id;
 
-        {/* 2. Top-Right Node: Link */}
-        <div
-          className="absolute top-14 right-6 sm:top-18 sm:right-10 z-30 group cursor-pointer"
-          onMouseEnter={() => setActiveNode("link")}
-          onMouseLeave={() => setActiveNode(null)}
-          onClick={(e) => {
-            e.stopPropagation();
-            setCurrentEventIndex((prev) => (prev + 1) % sampleEvents.length);
-          }}
-        >
-          <div className="relative">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#f3e8ff] dark:bg-purple-950/60 border border-purple-300 dark:border-purple-700 shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center justify-center text-purple-700 dark:text-purple-300 transition-transform duration-200 group-hover:scale-115">
-              <Link2 className="w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
-            {activeNode === "link" && (
-              <div className="absolute top-12 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-neutral-900 text-white text-[10px] font-mono rounded-lg whitespace-nowrap shadow-lg z-40">
-                CAIP-2 Multichain Reference
-              </div>
-            )}
-          </div>
-        </div>
+          return (
+            <div
+              key={node.id}
+              style={{
+                position: "absolute",
+                left: `${(x / 560) * 100}%`,
+                top: `${(y / 560) * 100}%`,
+                transform: `translate(-50%, -50%) scale(${isHovered ? scale * 1.2 : scale})`,
+                opacity: opacity,
+                zIndex: zIndex,
+                transition: isHovered
+                  ? "transform 0.2s ease-out, opacity 0.2s ease-out"
+                  : "opacity 0.2s ease-out",
+              }}
+              className="cursor-pointer group"
+              onMouseEnter={() => {
+                setActiveNode(node.id);
+                setIsOrbitHovered(true);
+              }}
+              onMouseLeave={() => {
+                setActiveNode(null);
+                setIsOrbitHovered(false);
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrentEventIndex((prev) => (prev + 1) % sampleEvents.length);
+              }}
+            >
+              <div className="relative">
+                {/* Node Pill Badge */}
+                <div
+                  className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full ${node.bg} border ${node.border} ${node.glow} ${node.text} flex items-center justify-center transition-transform duration-200`}
+                >
+                  <IconComp className="w-5 h-5 sm:w-5.5 sm:h-5.5" />
+                </div>
 
-        {/* 3. Bottom-Left Node: QR Code */}
-        <div
-          className="absolute bottom-12 left-4 sm:bottom-16 sm:left-8 z-30 group cursor-pointer"
-          onMouseEnter={() => setActiveNode("qr")}
-          onMouseLeave={() => setActiveNode(null)}
-          onClick={(e) => {
-            e.stopPropagation();
-            setCurrentEventIndex((prev) => (prev + 1) % sampleEvents.length);
-          }}
-        >
-          <div className="relative">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f2fe] dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-[0_0_20px_rgba(56,189,248,0.4)] flex items-center justify-center text-sky-700 dark:text-sky-300 transition-transform duration-200 group-hover:scale-115">
-              <QrCode className="w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
-            {activeNode === "qr" && (
-              <div className="absolute bottom-12 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-neutral-900 text-white text-[10px] font-mono rounded-lg whitespace-nowrap shadow-lg z-40">
-                Live Stage QR Mode
+                {/* Tooltip Card */}
+                {isHovered && (
+                  <div className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-neutral-900 text-white text-[10px] font-mono rounded-lg whitespace-nowrap shadow-xl z-50 pointer-events-none">
+                    {node.title}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* 4. Bottom-Right Node: Lock */}
-        <div
-          className="absolute bottom-8 right-8 sm:bottom-12 sm:right-14 z-30 group cursor-pointer"
-          onMouseEnter={() => setActiveNode("lock")}
-          onMouseLeave={() => setActiveNode(null)}
-          onClick={(e) => {
-            e.stopPropagation();
-            setCurrentEventIndex((prev) => (prev + 1) % sampleEvents.length);
-          }}
-        >
-          <div className="relative">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#f4fce3] dark:bg-lime-950/60 border border-lime-300 dark:border-lime-700 shadow-[0_0_20px_rgba(163,230,53,0.45)] flex items-center justify-center text-lime-700 dark:text-lime-300 transition-transform duration-200 group-hover:scale-115">
-              <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            {activeNode === "lock" && (
-              <div className="absolute bottom-12 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-neutral-900 text-white text-[10px] font-mono rounded-lg whitespace-nowrap shadow-lg z-40">
-                Soulbound Immutable Record
-              </div>
-            )}
-          </div>
-        </div>
+          );
+        })}
 
-        {/* 360-DEGREE ROTATING 3D GLASS CARTRIDGE */}
+        {/* 360-DEGREE ROTATING 3D GLASS CARTRIDGE PLAQUE */}
         <div
           className="relative z-20 transition-transform ease-out"
           style={{
@@ -341,7 +393,7 @@ export function GlassPlaqueHero() {
             transitionDuration: isDragging ? "0ms" : "150ms",
           }}
         >
-          {/* Ground Contact Shadow beneath Plaque */}
+          {/* Realistic Ground Shadow beneath Plaque */}
           <div
             className="absolute -bottom-10 left-6 right-6 h-12 bg-black/25 dark:bg-black/60 rounded-full blur-2xl -z-20 pointer-events-none"
             style={{
@@ -349,7 +401,7 @@ export function GlassPlaqueHero() {
             }}
           />
 
-          {/* Plaque 3D Slab Thickness Core */}
+          {/* Plaque 3D Slab Thickness Core Layer */}
           <div
             className="absolute inset-0 rounded-[2.5rem] pointer-events-none -z-10"
             style={{
@@ -485,7 +537,7 @@ export function GlassPlaqueHero() {
               }}
             />
 
-            {/* Back Header: Protocol Badges */}
+            {/* Back Header */}
             <div className="space-y-2 z-20 pt-2 w-full">
               <div className="flex items-center justify-between border-b border-neutral-200 pb-2 px-1">
                 <span className="text-[10px] font-mono font-bold uppercase text-neutral-400">
@@ -534,7 +586,7 @@ export function GlassPlaqueHero() {
         </div>
       </div>
 
-      {/* Modern Floating 360° Controls Bar */}
+      {/* Floating 360° Controls Bar */}
       <div className="flex flex-wrap items-center justify-center gap-2 mt-4 z-30">
         {/* Drag Hint Pill */}
         <div className="px-3.5 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-800 text-[11px] font-mono text-neutral-600 dark:text-neutral-400 flex items-center gap-1.5 shadow-xs">
