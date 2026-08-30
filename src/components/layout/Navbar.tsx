@@ -9,6 +9,7 @@ import { BASE_SEPOLIA_CHAIN_ID } from "@/lib/contracts/address";
 import { formatAddress } from "@/lib/utils/formatting";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
+import { OnchainLogo } from "@/components/brand/OnchainLogo";
 import {
   Wallet,
   LogOut,
@@ -79,13 +80,8 @@ export function Navbar() {
       {/* Main Navigation Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 h-20 flex items-center justify-between gap-4">
         {/* Left: Brand Logo */}
-        <Link href="/" className="flex items-center gap-3 group shrink-0">
-          <div className="w-8 h-8 rounded-full bg-neutral-900 dark:bg-white flex items-center justify-center shadow-xs transition-transform duration-200 group-hover:scale-105">
-            <div className="w-3 h-3 rounded-full bg-lime-400 dark:bg-lime-500 shadow-[0_0_8px_rgba(163,230,53,0.85)]" />
-          </div>
-          <span className="font-extrabold text-sm sm:text-base tracking-tight text-neutral-900 dark:text-white uppercase font-sans">
-            Onchain POAPs
-          </span>
+        <Link href="/" className="flex items-center group shrink-0 transition-transform duration-200 hover:opacity-90">
+          <OnchainLogo size="md" />
         </Link>
 
         {/* Center: Navigation Links (Floating Pill Layout) */}

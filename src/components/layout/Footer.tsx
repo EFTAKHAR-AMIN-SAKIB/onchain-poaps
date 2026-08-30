@@ -3,20 +3,17 @@ import Link from "next/link";
 import { ONCHAIN_POAPS_ADDRESS, BASE_SEPOLIA_EXPLORER } from "@/lib/contracts/address";
 import { ExternalLink } from "lucide-react";
 
+import { OnchainLogo } from "@/components/brand/OnchainLogo";
+
 export function Footer() {
   return (
     <footer className="w-full border-t border-neutral-150 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 py-12 px-4 sm:px-8 mt-auto transition-colors">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 text-left">
         {/* Brand Column */}
         <div className="md:col-span-5 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-neutral-900 dark:bg-white flex items-center justify-center">
-              <div className="w-3 h-3 rounded-full bg-lime-400 dark:bg-lime-500 shadow-[0_0_8px_rgba(163,230,53,0.8)]" />
-            </div>
-            <span className="font-extrabold text-base tracking-tight text-neutral-900 dark:text-white uppercase font-sans">
-              Onchain POAPs
-            </span>
-          </div>
+          <Link href="/" className="inline-block hover:opacity-90 transition-opacity">
+            <OnchainLogo size="md" />
+          </Link>
 
           <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-sm leading-relaxed">
             Proof of Attendance protocol storing 100% vector SVG artwork and event metadata directly on Base Sepolia bytecode. Zero IPFS or centralized server dependencies.

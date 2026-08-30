@@ -9,6 +9,11 @@ export const metadata: Metadata = {
   title: "Onchain POAPs — Moments Live. Onchain Forever.",
   description:
     "Create, mint, and collect POAPs with artwork and event details stored directly onchain. Transparent, verifiable, and built to last on Base.",
+  icons: {
+    icon: "/symbol.svg",
+    shortcut: "/symbol.svg",
+    apple: "/symbol.svg",
+  },
   openGraph: {
     title: "Onchain POAPs — Moments Live. Onchain Forever.",
     description:
