@@ -5,19 +5,80 @@ import { StepArtwork } from "@/components/create/StepArtwork";
 import { StepDetails, EventDetailsForm } from "@/components/create/StepDetails";
 import { StepDistribution, DistributionConfig } from "@/components/create/StepDistribution";
 import { StepPreview } from "@/components/create/StepPreview";
-import { OptimizationResult } from "@/lib/svg/optimizer";
+import { BadgeConfig, generateBadgeSvg } from "@/lib/svg/generator";
+import { optimizeSvg, OptimizationResult } from "@/lib/svg/optimizer";
 import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
 
 export default function CreatePage() {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
 
-  // Form State
-  const [artworkSvg, setArtworkSvg] = useState<string>("");
-  const [optimization, setOptimization] = useState<OptimizationResult | null>(null);
+  // Initial Badge & Event Config
+  const [badgeConfig, setBadgeConfig] = useState<BadgeConfig>({
+    style: "acrylic",
+    preset: "crystal",
+    shape: "medal",
+    material: "crystal",
+    depth: "deep",
+    reflection: "soft",
+    glow: "soft",
+    colorPreset: "lime",
+    customColor: "#84cc16",
+    title: "Testing 1",
+    subtitle: "I WAS THERE",
+    dateOrYear: new Date().getFullYear().toString(),
+    location: "NEW YORK, USA",
+    iconValue: "sparkle",
+    hasInnerDashedRing: true,
+  });
+
+  const [isCustomSvg, setIsCustomSvg] = useState(false);
+
+  // Initial SVG state generated from badgeConfig
+  const [artworkSvg, setArtworkSvg] = useState<string>(() => {
+    const raw = generateBadgeSvg({
+      style: "acrylic",
+      preset: "crystal",
+      shape: "medal",
+      material: "crystal",
+      depth: "deep",
+      reflection: "soft",
+      glow: "soft",
+      colorPreset: "lime",
+      customColor: "#84cc16",
+      title: "Testing 1",
+      subtitle: "I WAS THERE",
+      dateOrYear: new Date().getFullYear().toString(),
+      location: "NEW YORK, USA",
+      iconValue: "sparkle",
+      hasInnerDashedRing: true,
+    });
+    return optimizeSvg(raw).optimizedSvg;
+  });
+
+  const [optimization, setOptimization] = useState<OptimizationResult | null>(() => {
+    const raw = generateBadgeSvg({
+      style: "acrylic",
+      preset: "crystal",
+      shape: "medal",
+      material: "crystal",
+      depth: "deep",
+      reflection: "soft",
+      glow: "soft",
+      colorPreset: "lime",
+      customColor: "#84cc16",
+      title: "Testing 1",
+      subtitle: "I WAS THERE",
+      dateOrYear: new Date().getFullYear().toString(),
+      location: "NEW YORK, USA",
+      iconValue: "sparkle",
+      hasInnerDashedRing: true,
+    });
+    return optimizeSvg(raw);
+  });
 
   const [details, setDetails] = useState<EventDetailsForm>({
-    name: "ETHGlobal New York 2026",
-    description: "Commemorating active participation, innovation, and attendance at the annual Ethereum New York Hackathon.",
+    name: "Testing 1",
+    description: "Commemorating active participation, innovation, and attendance at the event.",
     eventDate: new Date().toISOString().split("T")[0],
     location: "New York, USA",
     externalUrl: "https://ethglobal.com",
@@ -40,13 +101,66 @@ export default function CreatePage() {
     { num: 4, title: "Review", subtitle: "Onchain Register" },
   ];
 
+  // Callback when SVG is generated in studio or uploaded
   const handleArtworkChange = useCallback((svgCode: string, opt: OptimizationResult) => {
     setArtworkSvg(svgCode);
     setOptimization(opt);
   }, []);
 
+  // Sync Studio changes with details form
+  const handleBadgeConfigChange = useCallback((newConfig: BadgeConfig) => {
+    setBadgeConfig(newConfig);
+    setIsCustomSvg(false);
+
+    // Keep metadata form in sync with Studio inputs
+    setDetails((prev) => ({
+      ...prev,
+      name: newConfig.title || prev.name,
+      location: newConfig.location || prev.location,
+    }));
+
+    const raw = generateBadgeSvg(newConfig);
+    const opt = optimizeSvg(raw);
+    setArtworkSvg(opt.optimizedSvg);
+    setOptimization(opt);
+  }, []);
+
+  const handleCustomSvgChange = useCallback((svgCode: string, isCustom: boolean) => {
+    setIsCustomSvg(isCustom);
+    if (isCustom) {
+      const opt = optimizeSvg(svgCode);
+      setArtworkSvg(opt.optimizedSvg);
+      setOptimization(opt);
+    }
+  }, []);
+
+  // Real-time bidirectional sync when user edits details form
   const handleDetailChange = useCallback((field: keyof EventDetailsForm, value: string) => {
-    setDetails((prev) => ({ ...prev, [field]: value }));
+    setDetails((prev) => {
+      const next = { ...prev, [field]: value };
+
+      // If using studio-generated badge, dynamically regenerate and optimize the SVG in real time!
+      if (!isCustomSvg) {
+        setBadgeConfig((prevConfig) => {
+          const updatedConfig: BadgeConfig = {
+            ...prevConfig,
+            title: field === "name" ? (value.trim() || "ONCHAIN POAP") : prevConfig.title,
+            location: field === "location" ? (value.trim().toUpperCase() || "ONCHAIN") : prevConfig.location,
+            dateOrYear: field === "eventDate"
+              ? (value ? value.split("-")[0] : prevConfig.dateOrYear)
+              : prevConfig.dateOrYear,
+          };
+          const raw = generateBadgeSvg(updatedConfig);
+          const opt = optimizeSvg(raw);
+          setArtworkSvg(opt.optimizedSvg);
+          setOptimization(opt);
+          return updatedConfig;
+        });
+      }
+
+      return next;
+    });
+
     setDetailsErrors((prev) => {
       if (prev[field]) {
         const next = { ...prev };
@@ -55,7 +169,7 @@ export default function CreatePage() {
       }
       return prev;
     });
-  }, []);
+  }, [isCustomSvg]);
 
   const validateDetailsStep = (): boolean => {
     const errs: Partial<Record<keyof EventDetailsForm, string>> = {};
@@ -168,6 +282,10 @@ export default function CreatePage() {
       <div>
         {currentStep === 1 && (
           <StepArtwork
+            config={badgeConfig}
+            onConfigChange={handleBadgeConfigChange}
+            isCustomSvg={isCustomSvg}
+            onCustomSvgChange={handleCustomSvgChange}
             initialTitle={details.name}
             onComplete={handleArtworkChange}
           />

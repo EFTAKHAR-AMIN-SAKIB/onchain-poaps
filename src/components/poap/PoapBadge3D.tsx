@@ -8,6 +8,8 @@ export interface PoapBadge3DProps {
   className?: string;
   size?: "sm" | "md" | "lg" | "xl";
   interactive?: boolean;
+  isLoading?: boolean;
+  fallbackTitle?: string;
 }
 
 export function PoapBadge3D({
@@ -15,6 +17,8 @@ export function PoapBadge3D({
   className,
   size = "md",
   interactive = true,
+  isLoading = false,
+  fallbackTitle,
 }: PoapBadge3DProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotateX, setRotateX] = useState(0);
@@ -86,15 +90,25 @@ export function PoapBadge3D({
           }}
         />
 
-        {/* SVG Container */}
+        {/* SVG Container / Loading / Fallback */}
         {svgContent ? (
           <div
             className="w-full h-full flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:max-w-full [&>svg]:max-h-full drop-shadow-[0_12px_24px_rgba(0,0,0,0.08)] dark:drop-shadow-[0_12px_24px_rgba(0,0,0,0.4)]"
             dangerouslySetInnerHTML={{ __html: svgContent }}
           />
+        ) : isLoading ? (
+          <div className="w-full h-full rounded-3xl bg-neutral-100 dark:bg-neutral-800/80 flex flex-col items-center justify-center text-neutral-400 dark:text-neutral-500 font-mono text-xs text-center p-4 border border-dashed border-neutral-200 dark:border-neutral-700/60 animate-pulse">
+            <div className="w-8 h-8 rounded-full border-2 border-neutral-300 dark:border-neutral-700 border-t-blue-500 animate-spin mb-2" />
+            <span className="text-[11px]">Loading Artwork...</span>
+          </div>
         ) : (
-          <div className="w-full h-full rounded-3xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-400 font-mono text-xs text-center p-4">
-            Loading Artwork...
+          <div className="w-full h-full rounded-3xl bg-gradient-to-br from-neutral-800 to-neutral-950 p-4 flex flex-col items-center justify-center text-center shadow-inner border border-neutral-700/60 relative overflow-hidden group">
+            <div className="w-14 h-14 rounded-2xl bg-neutral-800 border border-neutral-700 flex items-center justify-center text-lime-400 font-bold text-xl shadow-lg mb-2">
+              {fallbackTitle ? fallbackTitle.charAt(0).toUpperCase() : "★"}
+            </div>
+            <span className="text-[11px] font-mono text-neutral-400 truncate max-w-[120px]">
+              {fallbackTitle || "POAP Badge"}
+            </span>
           </div>
         )}
       </div>

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { PoapEventData, fetchTotalEvents, fetchPoapEvent } from "@/lib/contracts/client";
+import { PoapEventData, fetchTotalEvents, fetchPoapEventsBatch } from "@/lib/contracts/client";
 import { PoapCard } from "@/components/poap/PoapCard";
 import { GlassPlaqueHero } from "@/components/home/GlassPlaqueHero";
 import {
@@ -31,14 +31,13 @@ export default function HomePage() {
         const total = await fetchTotalEvents();
         setTotalEventsCount(total);
 
-        const idsToFetch = [0];
-        for (let i = total; i >= 1 && idsToFetch.length < 6; i--) {
-          if (!idsToFetch.includes(i)) idsToFetch.push(i);
+        const idsToFetch: number[] = [];
+        for (let i = total; i >= 0 && idsToFetch.length < 6; i--) {
+          idsToFetch.push(i);
         }
 
-        const eventPromises = idsToFetch.map((id) => fetchPoapEvent(id));
-        const results = await Promise.all(eventPromises);
-        setRecentEvents(results.filter((e): e is PoapEventData => e !== null));
+        const results = await fetchPoapEventsBatch(idsToFetch);
+        setRecentEvents(results);
       } catch (err) {
         console.error("Failed to load homepage events:", err);
       } finally {

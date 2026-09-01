@@ -64,6 +64,7 @@ export function PoapCard({ event, isOwned = false }: PoapCardProps) {
           svgContent={event.rawSvg}
           size="md"
           interactive={false}
+          fallbackTitle={event.name}
           className="group-hover:scale-105 transition-transform duration-300 drop-shadow-[0_12px_24px_rgba(0,0,0,0.12)]"
         />
       </div>

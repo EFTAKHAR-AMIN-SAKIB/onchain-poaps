@@ -254,6 +254,9 @@ export function generateBadgeSvg(config: BadgeConfig): string {
   const cleanSubtitle = (config.subtitle || "I WAS THERE").trim().replace(/[<>&"]/g, "");
   const cleanDate = (config.dateOrYear || "2026").trim().replace(/[<>&"]/g, "");
   const cleanLocation = (config.location || "BASE SEPOLIA").trim().replace(/[<>&"]/g, "");
+  const titleFontSize = cleanTitle.length > 26 ? 12 : cleanTitle.length > 18 ? 13.5 : 15;
+  const locCombined = `${cleanLocation.toUpperCase()} • ${cleanDate}`;
+  const locFontSize = locCombined.length > 34 ? 8 : locCombined.length > 26 ? 8.5 : 9.5;
 
   // Section 3: Material, Depth, Reflection, Glow Settings
   let depthOffset = config.depth === "deep" ? 14 : config.depth === "medium" ? 8 : 4;
@@ -636,13 +639,13 @@ export function generateBadgeSvg(config: BadgeConfig): string {
   <text x="${cx}" y="98" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="900" fill="${style === "classic" ? "#fef08a" : effectiveAccent}">✦</text>
 
   <!-- Event Title -->
-  <text x="${cx}" y="124" text-anchor="middle" font-family="${style === "pixel" ? "'Courier New', monospace" : "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"}" font-size="15" font-weight="800" letter-spacing="${style === "pixel" ? "1" : "1.5"}" fill="${textColor}">
-    ${cleanTitle.length > 28 ? cleanTitle.slice(0, 26) + "..." : cleanTitle}
+  <text x="${cx}" y="124" text-anchor="middle" font-family="${style === "pixel" ? "'Courier New', monospace" : "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"}" font-size="${titleFontSize}" font-weight="800" letter-spacing="${style === "pixel" ? "1" : "1.5"}" fill="${textColor}">
+    ${cleanTitle.length > 34 ? cleanTitle.slice(0, 32) + "..." : cleanTitle}
   </text>
 
   <!-- Location & Coordinates Tag -->
-  <text x="${cx}" y="142" text-anchor="middle" font-family="'SF Mono', Menlo, Monaco, Consolas, monospace" font-size="9.5" font-weight="600" letter-spacing="1" fill="${mutedTextColor}">
-    ${cleanLocation.toUpperCase()} • ${cleanDate}
+  <text x="${cx}" y="142" text-anchor="middle" font-family="'SF Mono', Menlo, Monaco, Consolas, monospace" font-size="${locFontSize}" font-weight="600" letter-spacing="0.8" fill="${mutedTextColor}">
+    ${locCombined.length > 40 ? locCombined.slice(0, 38) + "..." : locCombined}
   </text>
 
   <!-- Bottom Main Inscription: I WAS THERE / Subtitle -->

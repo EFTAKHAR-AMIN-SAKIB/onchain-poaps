@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { PoapEventData, fetchTotalEvents, fetchPoapEvent } from "@/lib/contracts/client";
+import { PoapEventData, fetchAllPoapEvents } from "@/lib/contracts/client";
 import { PoapCard } from "@/components/poap/PoapCard";
 import { Search, Plus } from "lucide-react";
 
@@ -16,15 +16,9 @@ export default function ExplorePage() {
   useEffect(() => {
     async function loadAllEvents() {
       try {
-        const total = await fetchTotalEvents();
-        const ids: number[] = [];
-        for (let i = 0; i <= total; i++) {
-          ids.push(i);
-        }
-
-        const promises = ids.map((id) => fetchPoapEvent(id));
-        const results = await Promise.all(promises);
-        setEvents(results.filter((e): e is PoapEventData => e !== null));
+        setLoading(true);
+        const data = await fetchAllPoapEvents();
+        setEvents(data);
       } catch (err) {
         console.error("Failed to load explore events:", err);
       } finally {
@@ -87,11 +81,12 @@ export default function ExplorePage() {
           </p>
         </div>
 
-        <Link href="/create">
-          <button className="px-4.5 py-2.5 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold flex items-center gap-1.5 shadow-xs hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all">
-            <Plus className="w-4 h-4" />
-            <span>Create a POAP</span>
-          </button>
+        <Link
+          href="/create"
+          className="px-4.5 py-2.5 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold flex items-center gap-1.5 shadow-xs hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Create a POAP</span>
         </Link>
       </div>
 

@@ -5,8 +5,7 @@ import { useAccount, useWriteContract } from "wagmi";
 import Link from "next/link";
 import {
   PoapEventData,
-  fetchTotalEvents,
-  fetchPoapEvent,
+  fetchAllPoapEvents,
   publicClient,
 } from "@/lib/contracts/client";
 import { ONCHAIN_POAPS_ADDRESS, BASE_SEPOLIA_EXPLORER } from "@/lib/contracts/address";
@@ -42,16 +41,10 @@ export default function CreatorDashboardPage() {
       }
       try {
         setLoading(true);
-        const total = await fetchTotalEvents();
-        const ids: number[] = [];
-        for (let i = 0; i <= total; i++) {
-          ids.push(i);
-        }
-
-        const events = await Promise.all(ids.map((id) => fetchPoapEvent(id)));
+        const events = await fetchAllPoapEvents();
         const userCreated = events.filter(
           (e): e is PoapEventData =>
-            e !== null && e.creator.toLowerCase() === address.toLowerCase()
+            e.creator.toLowerCase() === address.toLowerCase()
         );
         setCreatedEvents(userCreated);
       } catch (err) {

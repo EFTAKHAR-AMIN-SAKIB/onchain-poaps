@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useAccount } from "wagmi";
 import Link from "next/link";
-import { PoapEventData, fetchTotalEvents, fetchPoapEvent, checkBalanceOf } from "@/lib/contracts/client";
+import { PoapEventData, fetchAllPoapEvents, checkBalanceOf } from "@/lib/contracts/client";
 import { PoapCard } from "@/components/poap/PoapCard";
 import { formatAddress } from "@/lib/utils/formatting";
 import { Search, Plus } from "lucide-react";
@@ -23,14 +23,7 @@ export default function GalleryPage() {
     async function loadUserMemories() {
       try {
         setLoading(true);
-        const total = await fetchTotalEvents();
-        const ids: number[] = [];
-        for (let i = 0; i <= total; i++) {
-          ids.push(i);
-        }
-
-        const events = await Promise.all(ids.map((id) => fetchPoapEvent(id)));
-        const validEvents = events.filter((e): e is PoapEventData => e !== null);
+        const validEvents = await fetchAllPoapEvents();
         setAllEvents(validEvents);
 
         if (address) {

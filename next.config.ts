@@ -27,6 +27,7 @@ const nextConfig: NextConfig = {
       "@x402/core": false,
       "@base-org/account": false,
       "@coinbase/cdp-sdk": false,
+      "@react-native-async-storage/async-storage": false,
     };
     return config;
   },

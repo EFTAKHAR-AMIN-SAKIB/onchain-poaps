@@ -69,11 +69,12 @@ export default function PoapDetailPage() {
   const queryClaim = extractClaimParams(searchParams);
   const hasQuerySignature = !!queryClaim.signature;
 
-  const isCreator =
+  const isCreator = Boolean(
     isConnected &&
     address &&
     eventData?.creator &&
-    address.toLowerCase() === eventData.creator.toLowerCase();
+    address.toLowerCase() === eventData.creator.toLowerCase()
+  );
 
   const hasAllowlist =
     eventData?.allowlistRoot &&

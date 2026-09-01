@@ -35,20 +35,28 @@ import {
 } from "lucide-react";
 
 export interface BadgeCanvasProps {
+  config?: BadgeConfig;
+  onConfigChange?: (config: BadgeConfig) => void;
   initialTitle?: string;
   initialDate?: string;
+  isCustomSvg?: boolean;
+  onCustomSvgChange?: (svgCode: string, isCustom: boolean) => void;
   onSvgChange: (svgCode: string, optimization: OptimizationResult) => void;
 }
 
 export function BadgeCanvas({
-  initialTitle = "ETH GLOBAL 2026",
+  config: configProp,
+  onConfigChange,
+  initialTitle = "ONCHAIN POAP",
   initialDate = "2026",
+  isCustomSvg = false,
+  onCustomSvgChange,
   onSvgChange,
 }: BadgeCanvasProps) {
-  const [activeTab, setActiveTab] = useState<"studio" | "upload">("studio");
+  const [activeTab, setActiveTab] = useState<"studio" | "upload">(isCustomSvg ? "upload" : "studio");
 
-  // Config State
-  const [config, setConfig] = useState<BadgeConfig>({
+  // Local state fallback when not controlled from outside
+  const [internalConfig, setInternalConfig] = useState<BadgeConfig>(() => configProp || {
     style: "acrylic",
     preset: "crystal",
     shape: "medal",
@@ -65,6 +73,21 @@ export function BadgeCanvas({
     iconValue: "sparkle",
     hasInnerDashedRing: true,
   });
+
+  const config = configProp || internalConfig;
+
+  const setConfig: React.Dispatch<React.SetStateAction<BadgeConfig>> = useCallback((action) => {
+    if (typeof action === "function") {
+      setInternalConfig((prev) => {
+        const next = (action as (p: BadgeConfig) => BadgeConfig)(configProp || prev);
+        if (onConfigChange) onConfigChange(next);
+        return next;
+      });
+    } else {
+      if (onConfigChange) onConfigChange(action);
+      setInternalConfig(action);
+    }
+  }, [configProp, onConfigChange]);
 
   const [customSvgInput, setCustomSvgInput] = useState("");
   const [customSvgError, setCustomSvgError] = useState<string | null>(null);
@@ -87,8 +110,11 @@ export function BadgeCanvas({
       if (onSvgChangeRef.current) {
         onSvgChangeRef.current(opt.optimizedSvg, opt);
       }
+      if (onCustomSvgChange) {
+        onCustomSvgChange(opt.optimizedSvg, false);
+      }
     }
-  }, [config, activeTab]);
+  }, [config, activeTab, onCustomSvgChange]);
 
   // Handle Custom SVG input
   const handleCustomSvgChange = useCallback((rawSvg: string) => {
@@ -111,7 +137,10 @@ export function BadgeCanvas({
     if (onSvgChangeRef.current) {
       onSvgChangeRef.current(opt.optimizedSvg, opt);
     }
-  }, []);
+    if (onCustomSvgChange) {
+      onCustomSvgChange(opt.optimizedSvg, true);
+    }
+  }, [onCustomSvgChange]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

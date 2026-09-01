@@ -30,6 +30,31 @@ export async function initFarcasterMiniApp(): Promise<boolean> {
 }
 
 /**
+ * Returns true if running inside Farcaster frame context.
+ */
+export async function isFarcasterFrame(): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  try {
+    const ctx = await sdk.context;
+    return Boolean(ctx);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Returns Farcaster user context if available.
+ */
+export async function getFarcasterContext() {
+  if (typeof window === "undefined") return null;
+  try {
+    return await sdk.context;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Opens a URL safely inside Farcaster client or standard browser tab.
  */
 export function openExternalUrl(url: string) {
