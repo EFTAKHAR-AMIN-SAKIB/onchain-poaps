@@ -18,13 +18,13 @@ export const metadata: Metadata = {
     title: "Onchain POAPs — Moments Live. Onchain Forever.",
     description:
       "Create, mint, and collect POAPs with artwork and event details stored directly onchain. Transparent, verifiable, and built to last on Base.",
-    url: "https://onchain-poaps.vercel.app",
+    url: "https://onchain-poaps-ebon.vercel.app",
     siteName: "Onchain POAPs",
     images: [
       {
-        url: "https://onchain-poaps.vercel.app/og.png",
+        url: "https://onchain-poaps-ebon.vercel.app/og.png",
         width: 1200,
-        height: 630,
+        height: 800,
       },
     ],
     locale: "en_US",
@@ -35,34 +35,34 @@ export const metadata: Metadata = {
     title: "Onchain POAPs — Moments Live. Onchain Forever.",
     description:
       "Permanent event memories with SVG artwork stored 100% onchain on Base.",
-    images: ["https://onchain-poaps.vercel.app/og.png"],
+    images: ["https://onchain-poaps-ebon.vercel.app/og.png"],
   },
   other: {
     "fc:miniapp": JSON.stringify({
       version: "1",
-      imageUrl: "https://onchain-poaps.vercel.app/og.png",
+      imageUrl: "https://onchain-poaps-ebon.vercel.app/og.png",
       button: {
         title: "Open Onchain POAPs",
         action: {
           type: "launch_miniapp",
           name: "Onchain POAPs",
-          url: "https://onchain-poaps.vercel.app",
-          splashImageUrl: "https://onchain-poaps.vercel.app/splash.png",
-          splashBackgroundColor: "#ffffff",
+          url: "https://onchain-poaps-ebon.vercel.app",
+          splashImageUrl: "https://onchain-poaps-ebon.vercel.app/splash.png",
+          splashBackgroundColor: "#0b0d10",
         },
       },
     }),
     "fc:frame": JSON.stringify({
       version: "1",
-      imageUrl: "https://onchain-poaps.vercel.app/og.png",
+      imageUrl: "https://onchain-poaps-ebon.vercel.app/og.png",
       button: {
         title: "Open Onchain POAPs",
         action: {
           type: "launch_frame",
           name: "Onchain POAPs",
-          url: "https://onchain-poaps.vercel.app",
-          splashImageUrl: "https://onchain-poaps.vercel.app/splash.png",
-          splashBackgroundColor: "#ffffff",
+          url: "https://onchain-poaps-ebon.vercel.app",
+          splashImageUrl: "https://onchain-poaps-ebon.vercel.app/splash.png",
+          splashBackgroundColor: "#0b0d10",
         },
       },
     }),
