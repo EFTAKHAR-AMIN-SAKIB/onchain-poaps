@@ -7,19 +7,19 @@
   "frame": {
     "version": "1",
     "name": "Onchain POAPs",
-    "iconUrl": "https://onchain-poaps.vercel.app/icon.svg",
-    "homeUrl": "https://onchain-poaps.vercel.app",
-    "imageUrl": "https://onchain-poaps.vercel.app/og.png",
+    "iconUrl": "https://onchain-poaps-ebon.vercel.app/symbol.svg",
+    "homeUrl": "https://onchain-poaps-ebon.vercel.app",
+    "imageUrl": "https://onchain-poaps-ebon.vercel.app/logo.svg",
     "buttonTitle": "Open Onchain POAPs",
-    "splashImageUrl": "https://onchain-poaps.vercel.app/splash.png",
+    "splashImageUrl": "https://onchain-poaps-ebon.vercel.app/symbol.svg",
     "splashBackgroundColor": "#0b0d10",
-    "webhookUrl": "https://onchain-poaps.vercel.app/api/webhook"
+    "webhookUrl": "https://onchain-poaps-ebon.vercel.app/api/webhook"
   },
   "triggers": [
     {
       "type": "cast",
       "name": "View POAP",
-      "url": "https://onchain-poaps.vercel.app"
+      "url": "https://onchain-poaps-ebon.vercel.app"
     }
   ]
 }

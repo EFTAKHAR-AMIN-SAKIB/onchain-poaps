@@ -10,9 +10,9 @@ Unlike generic dashboards or competitors with brittle off-chain dependencies, th
 
 ## 🔗 Key Links & Repository
 
-* **Live Application URL**: [https://onchain-poaps.vercel.app](https://onchain-poaps.vercel.app)
-* **Farcaster Mini App Manifest**: [https://onchain-poaps.vercel.app/.well-known/farcaster.json](https://onchain-poaps.vercel.app/.well-known/farcaster.json)
-* **GitHub Repository**: [https://github.com/jvaleskadevs/onchain-poaps](https://github.com/jvaleskadevs/onchain-poaps)
+* **Live Application URL**: [https://onchain-poaps-ebon.vercel.app](https://onchain-poaps-ebon.vercel.app)
+* **Farcaster Mini App Manifest**: [https://onchain-poaps-ebon.vercel.app/.well-known/farcaster.json](https://onchain-poaps-ebon.vercel.app/.well-known/farcaster.json)
+* **GitHub Repository**: [https://github.com/EFTAKHAR-AMIN-SAKIB/onchain-poaps](https://github.com/EFTAKHAR-AMIN-SAKIB/onchain-poaps)
 * **Base Sepolia Smart Contract**: [`0xC3249356a483fbe17d5355D39105D2eA666d9de6`](https://sepolia.basescan.org/address/0xC3249356a483fbe17d5355D39105D2eA666d9de6#code)
 * **Network & Chain ID**: Base Sepolia (`84532`)
 * **Standard**: ERC-1155 Multi-Token + ERC-1155Supply + SSTORE2 + CAIP-2
@@ -107,8 +107,8 @@ npm run dev
 > ⚡ 4 distribution flows: Public, Merkle Allowlist, Live Event QR, & Creator Drops
 > 🛡️ Zero-trust verification engine & museum memory gallery
 > 
-> Try the Mini App: https://onchain-poaps.vercel.app
-> GitHub: https://github.com/jvaleskadevs/onchain-poaps
+> Try the Mini App: https://onchain-poaps-ebon.vercel.app
+> GitHub: https://github.com/EFTAKHAR-AMIN-SAKIB/onchain-poaps
 > 
 > cc @jvaleska.eth @kenny 🔵
 
