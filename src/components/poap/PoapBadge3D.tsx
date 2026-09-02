@@ -53,11 +53,40 @@ export function PoapBadge3D({
     setGlarePosition((prev) => ({ ...prev, opacity: 0 }));
   };
 
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!interactive || !cardRef.current || e.touches.length === 0) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const touch = e.touches[0];
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    const rotX = ((y - centerY) / centerY) * -12;
+    const rotY = ((x - centerX) / centerX) * 12;
+
+    setRotateX(Math.max(-16, Math.min(16, rotX)));
+    setRotateY(Math.max(-16, Math.min(16, rotY)));
+    setGlarePosition({
+      x: Math.max(0, Math.min(100, (x / rect.width) * 100)),
+      y: Math.max(0, Math.min(100, (y / rect.height) * 100)),
+      opacity: 0.4,
+    });
+  };
+
+  const handleTouchEnd = () => {
+    if (!interactive) return;
+    setRotateX(0);
+    setRotateY(0);
+    setGlarePosition((prev) => ({ ...prev, opacity: 0 }));
+  };
+
   const sizeClasses = {
-    sm: "w-28 h-28",
-    md: "w-48 h-48",
-    lg: "w-72 h-72",
-    xl: "w-96 h-96 max-w-full",
+    sm: "w-24 sm:w-28 h-24 sm:h-28",
+    md: "w-40 sm:w-48 h-40 sm:h-48",
+    lg: "w-52 sm:w-72 h-52 sm:h-72",
+    xl: "w-56 h-56 sm:w-80 sm:h-80 lg:w-96 lg:h-96 max-w-full",
   };
 
   return (
@@ -69,6 +98,8 @@ export function PoapBadge3D({
         ref={cardRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         style={{
           transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
           transition:
@@ -77,7 +108,7 @@ export function PoapBadge3D({
               : "transform 0.08s ease-out",
         }}
         className={clsx(
-          "relative flex items-center justify-center p-2 group",
+          "relative flex items-center justify-center p-2 group touch-none",
           sizeClasses[size]
         )}
       >

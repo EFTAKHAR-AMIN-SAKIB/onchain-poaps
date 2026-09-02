@@ -140,9 +140,9 @@ export function StepDistribution({ config, artworkSvg, onChange }: StepDistribut
   ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 text-neutral-900 dark:text-neutral-100">
-      <div className="text-center space-y-1.5 max-w-xl mx-auto">
-        <h2 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+    <div className="max-w-4xl mx-auto space-y-5 sm:space-y-8 text-neutral-900 dark:text-neutral-100">
+      <div className="text-center space-y-1 sm:space-y-1.5 max-w-xl mx-auto">
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
           Distribution Strategy & Rules
         </h2>
         <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
@@ -151,11 +151,11 @@ export function StepDistribution({ config, artworkSvg, onChange }: StepDistribut
       </div>
 
       {/* 1. Distribution Method Cards */}
-      <div className="space-y-3">
+      <div className="space-y-2.5 sm:space-y-3">
         <div className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-500 text-left">
           How should people receive this POAP?
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-4 text-left">
           {distributionOptions.map((opt) => {
             const Icon = opt.icon;
             const isSelected = config.method === opt.id;
@@ -164,7 +164,7 @@ export function StepDistribution({ config, artworkSvg, onChange }: StepDistribut
                 key={opt.id}
                 type="button"
                 onClick={() => handleSelectMethod(opt.id)}
-                className={`p-6 rounded-3xl border text-left transition-all relative flex flex-col justify-between ${
+                className={`p-4 sm:p-6 rounded-2xl sm:rounded-3xl border text-left transition-all relative flex flex-col justify-between active:scale-[0.98] ${
                   isSelected
                     ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-neutral-900 dark:border-white shadow-md -translate-y-0.5"
                     : "bg-white dark:bg-neutral-900 border-neutral-200/80 dark:border-neutral-800 hover:border-neutral-300 shadow-card"

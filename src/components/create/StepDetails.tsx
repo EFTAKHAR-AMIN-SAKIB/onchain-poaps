@@ -37,17 +37,11 @@ export function StepDetails({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 items-start">
         {/* Left Column: Compact Live POAP Plaque Summary */}
-        <div className="lg:col-span-4 space-y-4 sticky top-24">
-          <div className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-card text-center space-y-4">
-            <div className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-500 flex items-center justify-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-lime-500" />
-              <span>COLLECTIBLE SUMMARY</span>
-            </div>
-
-            {/* Rendered Compact SVG */}
-            <div className="w-48 h-48 mx-auto flex items-center justify-center drop-shadow-md">
+        <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-24">
+          <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-card flex lg:flex-col items-center gap-3.5 sm:gap-4 text-left lg:text-center">
+            <div className="w-16 h-16 sm:w-48 sm:h-48 shrink-0 flex items-center justify-center drop-shadow-md">
               {artworkSvg ? (
                 <div
                   className="w-full h-full flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"
@@ -60,12 +54,15 @@ export function StepDetails({
               )}
             </div>
 
-            {/* Live Name */}
-            <div className="space-y-1 border-t border-neutral-100 dark:border-neutral-800 pt-3">
-              <div className="font-bold text-sm text-neutral-900 dark:text-white truncate">
+            <div className="space-y-0.5 sm:space-y-1 sm:border-t sm:border-neutral-100 sm:dark:border-neutral-800 sm:pt-3 w-full">
+              <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 hidden sm:flex items-center justify-center gap-1.5 mb-1">
+                <Sparkles className="w-3 h-3 text-lime-500" />
+                <span>COLLECTIBLE SUMMARY</span>
+              </div>
+              <div className="font-bold text-sm sm:text-base text-neutral-900 dark:text-white truncate">
                 {formData.name || "Untitled Event"}
               </div>
-              <div className="text-[11px] font-mono text-neutral-400 truncate">
+              <div className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400 truncate">
                 {formData.location || "Location TBD"} • {formData.eventDate || "Date TBD"}
               </div>
             </div>
@@ -73,7 +70,7 @@ export function StepDetails({
         </div>
 
         {/* Right Column: Form Inputs */}
-        <div className="lg:col-span-8 p-6 sm:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-card space-y-6 text-left">
+        <div className="lg:col-span-8 p-4 sm:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-card space-y-4 sm:space-y-6 text-left">
           {/* Name */}
           <div>
             <div className="flex justify-between items-center text-xs mb-1.5">

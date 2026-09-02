@@ -71,6 +71,31 @@ export function PoapAcrylicPreview({
     setGlare({ x: 50, y: 50, opacity: 0 });
   };
 
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!containerRef.current || e.touches.length === 0) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const touch = e.touches[0];
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    const rotX = -((y - centerY) / centerY) * 14;
+    const rotY = ((x - centerX) / centerX) * 14;
+
+    setRotate({ x: Math.max(-16, Math.min(16, rotX)), y: Math.max(-16, Math.min(16, rotY)) });
+    setGlare({
+      x: Math.max(0, Math.min(100, (x / rect.width) * 100)),
+      y: Math.max(0, Math.min(100, (y / rect.height) * 100)),
+      opacity: 0.5,
+    });
+  };
+
+  const handleTouchEnd = () => {
+    handleReset();
+  };
+
   const handleReset = () => {
     setRotate({ x: 0, y: 0 });
     setGlare({ x: 50, y: 50, opacity: 0 });
@@ -86,24 +111,24 @@ export function PoapAcrylicPreview({
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 w-full text-neutral-900 dark:text-neutral-100 select-none">
+    <div className="flex flex-col items-center gap-3 sm:gap-4 w-full text-neutral-900 dark:text-neutral-100 select-none">
       {/* Plaque Preview Box */}
-      <div className="w-full rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 p-6 sm:p-8 shadow-card flex flex-col items-center justify-between gap-6 relative overflow-hidden">
+      <div className="w-full rounded-2xl sm:rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 p-4 sm:p-8 shadow-card flex flex-col items-center justify-between gap-3 sm:gap-6 relative overflow-hidden">
         {/* Top Preview Status Bar */}
-        <div className="flex items-center justify-between w-full pb-3 border-b border-neutral-100 dark:border-neutral-800 text-xs font-mono">
+        <div className="flex items-center justify-between w-full pb-2.5 sm:pb-3 border-b border-neutral-100 dark:border-neutral-800 text-xs font-mono">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-lime-500 shadow-[0_0_8px_rgba(132,204,22,0.85)] animate-pulse" />
-            <span className="font-bold tracking-wider text-neutral-900 dark:text-white uppercase">
+            <span className="font-bold tracking-wider text-neutral-900 dark:text-white uppercase text-[11px] sm:text-xs">
               LIVE PREVIEW
             </span>
           </div>
 
           {/* Quick Toolbar */}
-          <div className="flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl">
+          <div className="flex items-center gap-1 sm:gap-1.5 bg-neutral-100 dark:bg-neutral-800 p-0.5 sm:p-1 rounded-xl">
             <button
               type="button"
               onClick={() => setZoomLevel(zoomLevel === "normal" ? "large" : "normal")}
-              className="p-1.5 rounded-lg text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-white dark:hover:bg-neutral-700 transition-colors"
+              className="p-1 sm:p-1.5 rounded-lg text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-white dark:hover:bg-neutral-700 transition-colors"
               title={zoomLevel === "normal" ? "Zoom In" : "Zoom Out"}
             >
               {zoomLevel === "normal" ? (
@@ -115,7 +140,7 @@ export function PoapAcrylicPreview({
             <button
               type="button"
               onClick={handleReset}
-              className="p-1.5 rounded-lg text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-white dark:hover:bg-neutral-700 transition-colors"
+              className="p-1 sm:p-1.5 rounded-lg text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-white dark:hover:bg-neutral-700 transition-colors"
               title="Reset 3D Perspective"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -123,7 +148,7 @@ export function PoapAcrylicPreview({
             <button
               type="button"
               onClick={() => setIsFullscreen(true)}
-              className="p-1.5 rounded-lg text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-white dark:hover:bg-neutral-700 transition-colors"
+              className="p-1 sm:p-1.5 rounded-lg text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-white dark:hover:bg-neutral-700 transition-colors"
               title="Fullscreen Museum View"
             >
               <Maximize2 className="w-3.5 h-3.5" />
@@ -136,11 +161,13 @@ export function PoapAcrylicPreview({
           ref={containerRef}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          className="relative w-full flex items-center justify-center py-4 cursor-pointer"
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="relative w-full flex items-center justify-center py-2 sm:py-4 cursor-pointer touch-none"
           style={{ perspective: "1000px" }}
         >
           {/* Ambient Background Aura Glow */}
-          <div className="absolute w-64 h-64 rounded-full bg-gradient-to-tr from-lime-200/40 via-purple-200/30 to-blue-200/30 dark:from-lime-900/20 dark:via-purple-900/10 dark:to-blue-900/10 blur-3xl pointer-events-none -z-10" />
+          <div className="absolute w-48 sm:w-64 h-48 sm:h-64 rounded-full bg-gradient-to-tr from-lime-200/40 via-purple-200/30 to-blue-200/30 dark:from-lime-900/20 dark:via-purple-900/10 dark:to-blue-900/10 blur-2xl sm:blur-3xl pointer-events-none -z-10" />
 
           {/* 3D Plaque Container */}
           <div
@@ -154,13 +181,13 @@ export function PoapAcrylicPreview({
             }}
             className={`relative transition-all duration-300 flex items-center justify-center ${
               zoomLevel === "large"
-                ? "w-[320px] sm:w-[380px] h-[320px] sm:h-[380px]"
-                : "w-[260px] sm:w-[310px] h-[260px] sm:h-[310px]"
+                ? "w-[240px] sm:w-[380px] h-[240px] sm:h-[380px]"
+                : "w-[180px] sm:w-[310px] h-[180px] sm:h-[310px]"
             }`}
           >
             {/* Dynamic Specular Lighting Sheen Overlay */}
             <div
-              className="pointer-events-none absolute inset-0 rounded-[2.5rem] z-30 transition-opacity duration-200"
+              className="pointer-events-none absolute inset-0 rounded-[2rem] sm:rounded-[2.5rem] z-30 transition-opacity duration-200"
               style={{
                 background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.15) 30%, transparent 65%)`,
                 opacity: glare.opacity,
@@ -170,11 +197,11 @@ export function PoapAcrylicPreview({
             {/* Rendered SVG Vector Plaque */}
             {svgContent ? (
               <div
-                className="w-full h-full flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:max-w-full [&>svg]:max-h-full drop-shadow-[0_20px_35px_rgba(0,0,0,0.08)] dark:drop-shadow-[0_20px_35px_rgba(0,0,0,0.5)]"
+                className="w-full h-full flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:max-w-full [&>svg]:max-h-full drop-shadow-[0_15px_25px_rgba(0,0,0,0.08)] dark:drop-shadow-[0_20px_35px_rgba(0,0,0,0.5)]"
                 dangerouslySetInnerHTML={{ __html: svgContent }}
               />
             ) : (
-              <div className="w-full h-full rounded-3xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-400 text-xs font-mono animate-pulse">
+              <div className="w-full h-full rounded-2xl sm:rounded-3xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-400 text-xs font-mono animate-pulse">
                 Generating Vector Acrylic Plaque...
               </div>
             )}
@@ -182,8 +209,8 @@ export function PoapAcrylicPreview({
         </div>
 
         {/* Caption Info */}
-        <div className="text-center space-y-1">
-          <div className="text-xs font-mono font-medium text-neutral-600 dark:text-neutral-300 flex items-center justify-center gap-2">
+        <div className="text-center space-y-0.5 sm:space-y-1">
+          <div className="text-[11px] sm:text-xs font-mono font-medium text-neutral-600 dark:text-neutral-300 flex items-center justify-center gap-1.5 sm:gap-2">
             <span>512 × 512</span>
             <span>•</span>
             <span className="font-semibold text-neutral-900 dark:text-white">SVG</span>
@@ -192,8 +219,8 @@ export function PoapAcrylicPreview({
               Ready for onchain storage
             </span>
           </div>
-          <p className="text-[11px] font-mono text-neutral-400">
-            ✦ Hover to tilt translucent acrylic plaque with specular light
+          <p className="text-[10px] sm:text-[11px] font-mono text-neutral-400">
+            ✦ Drag or hover to tilt translucent acrylic plaque with light sheen
           </p>
         </div>
 

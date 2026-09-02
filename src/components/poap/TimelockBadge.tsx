@@ -34,11 +34,16 @@ export function TimelockBadge({ createdAtSeconds, type }: TimelockBadgeProps) {
   }
 
   return (
-    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs font-mono">
-      <Clock className="w-3 h-3 text-amber-600 dark:text-amber-400 animate-pulse" />
+    <div className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-[11px] sm:text-xs font-mono">
+      <Clock className="w-3 h-3 text-amber-600 dark:text-amber-400 animate-pulse shrink-0" />
       <span>
-        {type === "creator" ? "Creator Controls: " : "Claim Window: "}
-        <strong className="text-amber-900 dark:text-amber-200">{status.formattedRemaining}</strong>
+        <span className="hidden sm:inline">
+          {type === "creator" ? "Creator Controls: " : "Claim Window: "}
+        </span>
+        <span className="sm:hidden inline">
+          {type === "creator" ? "Host: " : "Claim: "}
+        </span>
+        <strong className="text-amber-900 dark:text-amber-200 font-semibold">{status.formattedRemaining}</strong>
       </span>
     </div>
   );

@@ -50,9 +50,12 @@ export default function HomePage() {
   const mintMethods = [
     {
       id: 0,
+      step: "01",
       title: "Public Mint",
+      shortDesc: "Open to anyone. Self-claim anytime.",
       desc1: "Open to anyone.",
       desc2: "Anyone can mint one.",
+      badge: "Free Claim",
       icon: Globe,
       colorBg: "bg-[#eefadc] dark:bg-lime-950/40",
       colorText: "text-[#65a30d] dark:text-lime-400",
@@ -60,9 +63,12 @@ export default function HomePage() {
     },
     {
       id: 1,
+      step: "02",
       title: "Curated Guests",
+      shortDesc: "Invite list. Merkle tree verified.",
       desc1: "Allowlist only.",
       desc2: "Invite specific addresses.",
+      badge: "Merkle Root",
       icon: Users,
       colorBg: "bg-[#f3e8ff] dark:bg-purple-950/40",
       colorText: "text-[#9333ea] dark:text-purple-400",
@@ -70,9 +76,12 @@ export default function HomePage() {
     },
     {
       id: 2,
+      step: "03",
       title: "Live QR Mode",
+      shortDesc: "In-person scan. Dynamic EIP-712.",
       desc1: "Perfect for events.",
       desc2: "Scan and mint on the spot.",
+      badge: "EIP-712 Sign",
       icon: QrCode,
       colorBg: "bg-[#e0f2fe] dark:bg-sky-950/40",
       colorText: "text-[#0284c7] dark:text-sky-400",
@@ -80,9 +89,12 @@ export default function HomePage() {
     },
     {
       id: 3,
+      step: "04",
       title: "Direct Drop",
+      shortDesc: "Creator airdrop to recipient wallets.",
       desc1: "You decide.",
       desc2: "Mint directly to recipients.",
+      badge: "Multicall Batch",
       icon: Send,
       colorBg: "bg-[#ffedd5] dark:bg-orange-950/40",
       colorText: "text-[#ea580c] dark:text-orange-400",
@@ -91,7 +103,7 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="space-y-20 pb-20 overflow-hidden">
+    <div className="space-y-12 sm:space-y-20 pb-20 overflow-hidden">
       {/* 1. HERO SECTION (Exact pixel-accurate match to design) */}
       <section className="pt-10 sm:pt-14 lg:pt-18 px-4 sm:px-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-6 items-center">
@@ -163,13 +175,18 @@ export default function HomePage() {
       </section>
 
       {/* 2. DISTRIBUTE YOUR POAP (Four Ways to Mint modular cards) */}
-      <section className="px-4 sm:px-8 max-w-7xl mx-auto pt-4">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <section className="px-4 sm:px-8 max-w-7xl mx-auto pt-2 sm:pt-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
           {/* Left Description Column */}
-          <div className="lg:col-span-3 flex flex-col justify-center space-y-2 text-left pr-2">
-            <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
-              DISTRIBUTE YOUR POAP
-            </span>
+          <div className="lg:col-span-3 flex flex-col justify-center space-y-1.5 sm:space-y-2 text-left pr-0 sm:pr-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+                DISTRIBUTE YOUR POAP
+              </span>
+              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200/60 dark:border-neutral-700/60 sm:hidden">
+                4 WAYS
+              </span>
+            </div>
             <h2 className="font-bold text-2xl sm:text-3xl tracking-tight text-neutral-900 dark:text-white">
               Four ways to mint
             </h2>
@@ -178,8 +195,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* 4 Feature Cards */}
-          <div className="lg:col-span-9 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {/* 4 Feature Cards: 2x2 grid on mobile / Farcaster mini app to display all 4 steps completely, 4 cols on desktop */}
+          <div className="lg:col-span-9 grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-2.5 sm:gap-4">
             {mintMethods.map((method) => {
               const IconComp = method.icon;
               const isHovered = activeMintMode === method.id;
@@ -189,35 +206,48 @@ export default function HomePage() {
                   href={method.href}
                   onMouseEnter={() => setActiveMintMode(method.id)}
                   onMouseLeave={() => setActiveMintMode(null)}
-                  className={`bg-white dark:bg-neutral-900 border rounded-3xl p-6 h-56 flex flex-col justify-between transition-all duration-200 group text-left ${
+                  className={`bg-white dark:bg-neutral-900 border rounded-2xl sm:rounded-3xl p-3 sm:p-6 min-h-[148px] sm:h-56 flex flex-col justify-between transition-all duration-200 group text-left relative overflow-hidden active:scale-[0.98] ${
                     isHovered
-                      ? "border-neutral-400 dark:border-neutral-600 shadow-md translate-y-[-2px]"
-                      : "border-neutral-200/70 dark:border-neutral-800 shadow-card hover:border-neutral-300 dark:hover:border-neutral-700 hover:shadow-card-hover hover:translate-y-[-2px]"
+                      ? "border-neutral-400 dark:border-neutral-600 shadow-md sm:translate-y-[-2px]"
+                      : "border-neutral-200/70 dark:border-neutral-800 shadow-card hover:border-neutral-300 dark:hover:border-neutral-700 hover:shadow-card-hover sm:hover:translate-y-[-2px]"
                   }`}
                 >
-                  <div className="space-y-4">
-                    {/* Icon container */}
-                    <div
-                      className={`w-11 h-11 rounded-2xl flex items-center justify-center ${method.colorBg} ${method.colorText} transition-transform group-hover:scale-105`}
-                    >
-                      <IconComp className="w-5 h-5" />
+                  <div className="space-y-2 sm:space-y-4">
+                    {/* Top Row: Icon container + Step Badge */}
+                    <div className="flex items-center justify-between">
+                      <div
+                        className={`w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center ${method.colorBg} ${method.colorText} transition-transform group-hover:scale-105`}
+                      >
+                        <IconComp className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </div>
+                      <span className="text-[10px] sm:text-xs font-mono font-bold text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800/80 px-1.5 sm:px-2 py-0.5 rounded-md">
+                        {method.step}
+                      </span>
                     </div>
 
                     {/* Title & description */}
-                    <div className="space-y-1">
-                      <h3 className="font-bold text-base text-neutral-900 dark:text-white tracking-tight">
+                    <div className="space-y-0.5 sm:space-y-1">
+                      <h3 className="font-bold text-[13px] sm:text-base text-neutral-900 dark:text-white tracking-tight leading-snug">
                         {method.title}
                       </h3>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                      {/* Desktop description */}
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed hidden sm:block">
                         {method.desc1} <br />
                         {method.desc2}
+                      </p>
+                      {/* Mobile / Farcaster Mini App concise description */}
+                      <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-snug sm:hidden line-clamp-2">
+                        {method.shortDesc}
                       </p>
                     </div>
                   </div>
 
-                  {/* Arrow CTA */}
-                  <div className="pt-2">
-                    <ArrowRight className="w-4 h-4 text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-white group-hover:translate-x-1 transition-all" />
+                  {/* Bottom Row / CTA */}
+                  <div className="pt-2 flex items-center justify-between border-t border-neutral-100 dark:border-neutral-800/60 sm:border-0 mt-2 sm:mt-0">
+                    <span className="text-[9px] font-mono font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-500 sm:hidden">
+                      {method.badge}
+                    </span>
+                    <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-white group-hover:translate-x-1 transition-all ml-auto" />
                   </div>
                 </Link>
               );

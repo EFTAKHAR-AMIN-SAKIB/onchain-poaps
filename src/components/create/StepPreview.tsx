@@ -145,10 +145,10 @@ export function StepPreview({
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 text-neutral-900 dark:text-neutral-100">
+    <div className="max-w-4xl mx-auto space-y-5 sm:space-y-8 text-neutral-900 dark:text-neutral-100">
       {/* ================= SUCCESS REVEAL VIEW ================= */}
       {txState === "success" && createdEventId !== null ? (
-        <div className="p-8 sm:p-12 rounded-3xl bg-white dark:bg-neutral-900 border border-emerald-500/40 text-center space-y-6 shadow-card animate-fade-in">
+        <div className="p-5 sm:p-12 rounded-2xl sm:rounded-3xl bg-white dark:bg-neutral-900 border border-emerald-500/40 text-center space-y-5 sm:space-y-6 shadow-card animate-fade-in">
           {/* Green Status Badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs font-mono font-semibold border border-emerald-300 dark:border-emerald-800">
             <CheckCircle2 className="w-4 h-4" />
@@ -156,17 +156,17 @@ export function StepPreview({
           </div>
 
           <div className="space-y-1">
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-white">
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-white">
               POAP Created Successfully
             </h2>
-            <p className="text-sm font-mono text-neutral-500 dark:text-neutral-400">
+            <p className="text-xs sm:text-sm font-mono text-neutral-500 dark:text-neutral-400">
               "{details.name || "Event #" + createdEventId}" is permanently inscribed on Base Sepolia.
             </p>
           </div>
 
           {/* 3D Acrylic Plaque Reveal */}
-          <div className="flex justify-center my-6">
-            <div className="w-56 h-56 sm:w-64 sm:h-64 flex items-center justify-center drop-shadow-xl">
+          <div className="flex justify-center my-4 sm:my-6">
+            <div className="w-44 h-44 sm:w-64 sm:h-64 flex items-center justify-center drop-shadow-xl">
               <div
                 className="w-full h-full flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"
                 dangerouslySetInnerHTML={{ __html: artworkSvg }}
@@ -175,7 +175,7 @@ export function StepPreview({
           </div>
 
           {/* Onchain Metadata Table */}
-          <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-800 max-w-md mx-auto space-y-2.5 text-xs font-mono text-left">
+          <div className="p-4 sm:p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-800 max-w-md mx-auto space-y-2.5 text-xs font-mono text-left">
             <div className="flex justify-between items-center">
               <span className="text-neutral-500">EVENT ID:</span>
               <span className="font-bold text-neutral-900 dark:text-white">#{createdEventId}</span>
@@ -242,10 +242,10 @@ export function StepPreview({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 p-6 sm:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-card items-center">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-8 p-4 sm:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-card items-center">
             {/* Artwork Display */}
             <div className="md:col-span-5 flex flex-col items-center justify-center gap-3">
-              <div className="w-56 h-56 flex items-center justify-center drop-shadow-lg">
+              <div className="w-40 h-40 sm:w-56 sm:h-56 flex items-center justify-center drop-shadow-lg">
                 <div
                   className="w-full h-full flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"
                   dangerouslySetInnerHTML={{ __html: artworkSvg }}

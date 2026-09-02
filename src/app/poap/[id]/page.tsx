@@ -195,7 +195,12 @@ export default function PoapDetailPage() {
 
   const handleShareCast = () => {
     const text = `I'm claiming my onchain POAP for ${eventData?.name || "Event #" + eventId}! Stored 100% on @base 🔵`;
-    const url = typeof window !== "undefined" ? window.location.href : `https://onchain-poaps.vercel.app/poap/${eventId}`;
+    const url =
+      typeof window !== "undefined"
+        ? window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+          ? `https://onchain-poaps-ebon.vercel.app/poap/${eventId}`
+          : window.location.href
+        : `https://onchain-poaps-ebon.vercel.app/poap/${eventId}`;
     composeFarcasterCast(text, url);
   };
 
@@ -238,9 +243,9 @@ export default function PoapDetailPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-8 py-12 space-y-10 text-neutral-900 dark:text-neutral-100">
+    <div className="max-w-7xl mx-auto px-3 sm:px-8 py-4 sm:py-12 space-y-6 sm:space-y-10 pb-28 text-neutral-900 dark:text-neutral-100">
       {/* Top Breadcrumb & Status */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-mono text-neutral-500 border-b border-neutral-200/80 dark:border-neutral-800 pb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-3 text-xs font-mono text-neutral-500 border-b border-neutral-200/80 dark:border-neutral-800 pb-3 sm:pb-4">
         <div className="flex items-center gap-2 font-medium">
           <Link href="/explore" className="hover:text-neutral-900 dark:hover:text-white transition-colors flex items-center gap-1">
             <ArrowLeft className="w-3.5 h-3.5" /> Explore
@@ -250,20 +255,20 @@ export default function PoapDetailPage() {
             Event #{eventData.eventId}
           </span>
         </div>
-        <div className="flex items-center gap-2 flex-wrap font-mono">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap font-mono">
           <TimelockBadge createdAtSeconds={eventData.createdAt} type="creator" />
           <TimelockBadge createdAtSeconds={eventData.createdAt} type="signature" />
         </div>
       </div>
 
       {/* Main Collectible Presentation */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
         {/* Left Column: 3D Badge & Actions */}
-        <div className="lg:col-span-5 flex flex-col items-center gap-6 sticky top-24">
-          <div className="p-8 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-3xl shadow-card flex flex-col items-center w-full">
+        <div className="lg:col-span-5 flex flex-col items-center gap-4 sm:gap-6 lg:sticky lg:top-24">
+          <div className="p-4 sm:p-8 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl sm:rounded-3xl shadow-card flex flex-col items-center w-full">
             <PoapBadge3D svgContent={eventData.rawSvg} size="xl" interactive={true} />
 
-            <div className="flex items-center gap-2 mt-6 flex-wrap justify-center font-mono">
+            <div className="flex items-center gap-1.5 sm:gap-2 mt-4 sm:mt-6 flex-wrap justify-center font-mono">
               {eventData.isSoulbound ? (
                 <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-[10px] font-semibold uppercase px-2.5 py-1 rounded-full">
                   Soulbound
@@ -290,17 +295,19 @@ export default function PoapDetailPage() {
           </div>
 
           {/* Social Share & Copy Links */}
-          <div className="flex gap-3 w-full">
+          <div className="flex gap-2.5 sm:gap-3 w-full">
             <button
+              type="button"
               onClick={handleShareCast}
-              className="flex-1 py-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs font-semibold rounded-xl text-neutral-900 dark:text-white shadow-xs hover:bg-neutral-50 dark:hover:bg-neutral-800 flex items-center justify-center gap-1.5 transition-all"
+              className="flex-1 py-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs font-semibold rounded-xl text-neutral-900 dark:text-white shadow-xs hover:bg-neutral-50 dark:hover:bg-neutral-800 flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
             >
               <Share2 className="w-3.5 h-3.5 text-purple-600" />
               <span>Farcaster</span>
             </button>
             <button
+              type="button"
               onClick={handleCopyClaimLink}
-              className="flex-1 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold rounded-xl shadow-xs hover:bg-neutral-800 dark:hover:bg-neutral-100 flex items-center justify-center gap-1.5 transition-all"
+              className="flex-1 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold rounded-xl shadow-xs hover:bg-neutral-800 dark:hover:bg-neutral-100 flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
             >
               {copiedLink ? (
                 <>
@@ -318,7 +325,7 @@ export default function PoapDetailPage() {
 
           {/* Creator Management Quick Bar */}
           {isCreator && (
-            <div className="w-full p-5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-3xl shadow-card space-y-3 text-left">
+            <div className="w-full p-4 sm:p-5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl sm:rounded-3xl shadow-card space-y-3 text-left">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
                   <Settings className="w-4 h-4" />
@@ -350,19 +357,19 @@ export default function PoapDetailPage() {
         </div>
 
         {/* Right Column: Event Details, Eligibility & Claim Hub */}
-        <div className="lg:col-span-7 space-y-7 text-left">
+        <div className="lg:col-span-7 space-y-5 sm:space-y-7 text-left">
           {/* Header & Meta */}
-          <div className="space-y-3">
-            <h1 className="font-bold text-3xl sm:text-4xl lg:text-5xl tracking-tight text-neutral-900 dark:text-white leading-tight">
+          <div className="space-y-2.5 sm:space-y-3">
+            <h1 className="font-bold text-2xl sm:text-4xl lg:text-5xl tracking-tight text-neutral-900 dark:text-white leading-tight">
               {eventData.name}
             </h1>
             {eventData.description && (
-              <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed max-w-2xl font-normal">
+              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed max-w-2xl font-normal">
                 {eventData.description}
               </p>
             )}
 
-            <div className="flex flex-wrap gap-4 pt-3 text-xs text-neutral-700 dark:text-neutral-300 font-medium border-t border-neutral-100 dark:border-neutral-800">
+            <div className="flex flex-wrap gap-3 sm:gap-4 pt-2.5 sm:pt-3 text-xs text-neutral-700 dark:text-neutral-300 font-medium border-t border-neutral-100 dark:border-neutral-800">
               {eventData.eventDate > 0 && (
                 <div className="flex items-center gap-1.5">
                   <Calendar className="w-4 h-4 text-neutral-400" />
@@ -400,7 +407,7 @@ export default function PoapDetailPage() {
           />
 
           {/* Claim / Mint CTA Box */}
-          <div className="p-6 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-3xl shadow-card space-y-4">
+          <div className="p-4 sm:p-6 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl sm:rounded-3xl shadow-card space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <div className="text-base font-bold text-neutral-900 dark:text-white">
@@ -431,7 +438,7 @@ export default function PoapDetailPage() {
           </div>
 
           {/* Onchain Proof Table */}
-          <div className="p-6 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-3xl shadow-card space-y-4">
+          <div className="p-4 sm:p-6 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl sm:rounded-3xl shadow-card space-y-4">
             <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
               <span className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5">
                 <Layers className="w-4 h-4 text-neutral-400" />

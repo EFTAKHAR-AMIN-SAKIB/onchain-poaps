@@ -32,6 +32,9 @@ import {
   BookOpen,
   Sun,
   Shield,
+  Maximize2,
+  Minimize2,
+  ChevronUp,
 } from "lucide-react";
 
 export interface BadgeCanvasProps {
@@ -54,6 +57,7 @@ export function BadgeCanvas({
   onSvgChange,
 }: BadgeCanvasProps) {
   const [activeTab, setActiveTab] = useState<"studio" | "upload">(isCustomSvg ? "upload" : "studio");
+  const [isMiniPreviewExpanded, setIsMiniPreviewExpanded] = useState(true);
 
   // Local state fallback when not controlled from outside
   const [internalConfig, setInternalConfig] = useState<BadgeConfig>(() => configProp || {
@@ -76,18 +80,26 @@ export function BadgeCanvas({
 
   const config = configProp || internalConfig;
 
-  const setConfig: React.Dispatch<React.SetStateAction<BadgeConfig>> = useCallback((action) => {
-    if (typeof action === "function") {
-      setInternalConfig((prev) => {
-        const next = (action as (p: BadgeConfig) => BadgeConfig)(configProp || prev);
-        if (onConfigChange) onConfigChange(next);
-        return next;
-      });
-    } else {
-      if (onConfigChange) onConfigChange(action);
-      setInternalConfig(action);
-    }
-  }, [configProp, onConfigChange]);
+  // Stable ref for onConfigChange to prevent stale closures and extra re-renders
+  const onConfigChangeRef = useRef(onConfigChange);
+  useEffect(() => {
+    onConfigChangeRef.current = onConfigChange;
+  }, [onConfigChange]);
+
+  const setConfig: React.Dispatch<React.SetStateAction<BadgeConfig>> = useCallback(
+    (action) => {
+      const next =
+        typeof action === "function"
+          ? (action as (p: BadgeConfig) => BadgeConfig)(config)
+          : action;
+
+      setInternalConfig(next);
+      if (onConfigChangeRef.current) {
+        onConfigChangeRef.current(next);
+      }
+    },
+    [config]
+  );
 
   const [customSvgInput, setCustomSvgInput] = useState("");
   const [customSvgError, setCustomSvgError] = useState<string | null>(null);
@@ -110,11 +122,8 @@ export function BadgeCanvas({
       if (onSvgChangeRef.current) {
         onSvgChangeRef.current(opt.optimizedSvg, opt);
       }
-      if (onCustomSvgChange) {
-        onCustomSvgChange(opt.optimizedSvg, false);
-      }
     }
-  }, [config, activeTab, onCustomSvgChange]);
+  }, [config, activeTab]);
 
   // Handle Custom SVG input
   const handleCustomSvgChange = useCallback((rawSvg: string) => {
@@ -321,20 +330,37 @@ export function BadgeCanvas({
         </button>
       </div>
 
-      {/* Main Two-Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Live Floating Acrylic Preview & Optimizer */}
-        <div className="lg:col-span-5 space-y-5 sticky top-24">
+      {/* Studio Quick Jump Chip Bar for Mobile */}
+      {activeTab === "studio" && (
+        <div className="lg:hidden flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs font-medium text-neutral-600 dark:text-neutral-400">
+          <span className="text-[10px] font-mono font-bold uppercase text-neutral-400 shrink-0">JUMP:</span>
+          <a href="#section-presets" className="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 shrink-0">✨ Presets</a>
+          <a href="#section-style" className="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 shrink-0">💎 Style</a>
+          <a href="#section-color" className="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 shrink-0">🎨 Color</a>
+          <a href="#section-geometry" className="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 shrink-0">📐 Shape</a>
+          <a href="#section-typography" className="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 shrink-0">✏️ Text</a>
+          <a href="#section-icon" className="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 shrink-0">🌟 Icon</a>
+        </div>
+      )}
+
+      {/* Main Responsive Layout: On mobile Preview comes first, then Controls, then Optimizer/Docs */}
+      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+        {/* Left Column on Desktop / Top Preview on Mobile */}
+        <div className="w-full lg:col-span-5 space-y-4 sm:space-y-5 lg:sticky lg:top-24">
           <PoapAcrylicPreview
             svgContent={currentSvg}
             sizeBytes={optimization?.optimizedBytes}
           />
 
-          {/* SSTORE2 Gas Optimizer Stats */}
-          {optimization && <SvgOptimizerPanel optimization={optimization} />}
+          {/* Desktop-only: SSTORE2 Gas Optimizer Stats */}
+          {optimization && (
+            <div className="hidden lg:block">
+              <SvgOptimizerPanel optimization={optimization} />
+            </div>
+          )}
 
-          {/* "Why SVG?" Educational Card */}
-          <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-800 text-left space-y-2">
+          {/* Desktop-only: "Why SVG?" Educational Card */}
+          <div className="hidden lg:block p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-800 text-left space-y-2">
             <div className="flex items-center gap-2 text-xs font-bold font-mono uppercase text-neutral-800 dark:text-neutral-200">
               <BookOpen className="w-3.5 h-3.5 text-blue-500" />
               <span>Why 100% Vector SVG?</span>
@@ -354,7 +380,7 @@ export function BadgeCanvas({
         </div>
 
         {/* Right Column: Studio Design Controls */}
-        <div className="lg:col-span-7 space-y-6 text-left">
+        <div className="w-full lg:col-span-7 space-y-4 sm:space-y-6 text-left">
           {activeTab === "upload" ? (
             /* Upload SVG Panel */
             <div className="p-6 sm:p-8 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-3xl shadow-card space-y-5">
@@ -404,7 +430,7 @@ export function BadgeCanvas({
             /* POAP Acrylic Studio Controls */
             <div className="space-y-6">
               {/* 1. Visual Style System */}
-              <div className="p-6 sm:p-7 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-3xl shadow-card space-y-3">
+              <div id="section-style" className="p-4 sm:p-7 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl sm:rounded-3xl shadow-card space-y-3 scroll-mt-20">
                 <div className="flex items-center justify-between">
                   <div className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-500 flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-lime-500" />
@@ -456,7 +482,7 @@ export function BadgeCanvas({
               </div>
 
               {/* 2. Curated Presets */}
-              <div className="p-6 sm:p-7 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-3xl shadow-card space-y-3">
+              <div id="section-presets" className="p-4 sm:p-7 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl sm:rounded-3xl shadow-card space-y-3 scroll-mt-20">
                 <div className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-500 flex items-center gap-1.5">
                   <Palette className="w-3.5 h-3.5 text-neutral-400" />
                   2. ACRYLIC CURATED PRESETS ({Object.keys(ACRYLIC_PRESETS).length})
@@ -505,7 +531,7 @@ export function BadgeCanvas({
               </div>
 
               {/* 3. Acrylic Material, Depth & Reflection Controls */}
-              <div className="p-6 sm:p-7 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-3xl shadow-card space-y-4">
+              <div id="section-material" className="p-4 sm:p-7 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl sm:rounded-3xl shadow-card space-y-4 scroll-mt-20">
                 <div className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-500 flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5 text-neutral-400" />
                   3. MATERIAL, DEPTH & REFLECTION
@@ -607,7 +633,7 @@ export function BadgeCanvas({
               </div>
 
               {/* 4. Shape System */}
-              <div className="p-6 sm:p-7 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-3xl shadow-card space-y-3">
+              <div id="section-geometry" className="p-4 sm:p-7 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl sm:rounded-3xl shadow-card space-y-3 scroll-mt-20">
                 <div className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-500 flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5 text-neutral-400" />
                   4. PLAQUE GEOMETRY SHAPES ({shapes.length})
@@ -633,7 +659,7 @@ export function BadgeCanvas({
               </div>
 
               {/* 5. Accent Color Palette */}
-              <div className="p-6 sm:p-7 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-3xl shadow-card space-y-3">
+              <div id="section-color" className="p-4 sm:p-7 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl sm:rounded-3xl shadow-card space-y-3 scroll-mt-20">
                 <div className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-500 flex items-center gap-1.5">
                   <Palette className="w-3.5 h-3.5 text-neutral-400" />
                   5. ACCENT ENAMEL & COLOR TONE
@@ -698,7 +724,7 @@ export function BadgeCanvas({
               </div>
 
               {/* 6. Center Vector Mark & Glyphs */}
-              <div className="p-6 sm:p-7 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-3xl shadow-card space-y-3">
+              <div id="section-icon" className="p-4 sm:p-7 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl sm:rounded-3xl shadow-card space-y-3 scroll-mt-20">
                 <div className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-500 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-neutral-400" />
                   6. CENTER ENGRAVED VECTOR GLYPH ({Object.keys(VECTOR_ICONS).length})
@@ -734,7 +760,7 @@ export function BadgeCanvas({
               </div>
 
               {/* 7. Engraved Typography & Content */}
-              <div className="p-6 sm:p-7 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-3xl shadow-card space-y-4">
+              <div id="section-typography" className="p-4 sm:p-7 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl sm:rounded-3xl shadow-card space-y-4 scroll-mt-20">
                 <div className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-500 flex items-center gap-1.5">
                   <Type className="w-3.5 h-3.5 text-neutral-400" />
                   7. ENGRAVED TYPOGRAPHY & TAGS
@@ -818,7 +844,117 @@ export function BadgeCanvas({
             </div>
           )}
         </div>
+
+        {/* Mobile-only: Technical Stats & Educational Docs at bottom of Studio */}
+        <div className="w-full lg:hidden space-y-4 pt-2">
+          {optimization && <SvgOptimizerPanel optimization={optimization} />}
+          <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-800 text-left space-y-2">
+            <div className="flex items-center gap-2 text-xs font-bold font-mono uppercase text-neutral-800 dark:text-neutral-200">
+              <BookOpen className="w-3.5 h-3.5 text-blue-500" />
+              <span>Why 100% Vector SVG?</span>
+            </div>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed font-sans">
+              Your POAP artwork is stored directly as bytecode in Base Sepolia smart contract storage via SSTORE2. It does not depend on IPFS or external hosting.
+            </p>
+            <div className="pt-1">
+              <Link
+                href="/docs/svg-architecture"
+                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
+              >
+                <span>Learn more in Docs →</span>
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Floating Live Plaque Miniature for Mobile View - Much Larger & Highly Legible */}
+      {activeTab === "studio" && (
+        <div className="lg:hidden fixed bottom-20 right-3 z-30 flex flex-col items-end gap-1 select-none">
+          {isMiniPreviewExpanded ? (
+            /* Expanded Much Larger View */
+            <div className="bg-neutral-900/95 dark:bg-neutral-900/95 text-white backdrop-blur-xl border border-white/20 dark:border-neutral-700/80 shadow-[0_12px_36px_rgba(0,0,0,0.5)] rounded-2xl p-2.5 flex flex-col items-center gap-2 transition-all animate-fade-in w-[152px]">
+              {/* Header bar */}
+              <div className="flex items-center justify-between w-full px-0.5 text-[10px] font-mono">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-lime-400 shadow-[0_0_8px_rgba(132,204,22,0.9)] animate-pulse" />
+                  <span className="font-bold tracking-wider text-white text-[10px]">
+                    LIVE POAP
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsMiniPreviewExpanded(false)}
+                  className="p-1 rounded-md text-neutral-400 hover:text-white hover:bg-white/10 transition-colors"
+                  title="Minimize preview"
+                >
+                  <Minimize2 className="w-3 h-3" />
+                </button>
+              </div>
+
+              {/* Large High-Res Live Artwork Preview */}
+              <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="w-full flex flex-col items-center group cursor-pointer active:scale-95 transition-all"
+                title="Tap to view full 3D interactive stage"
+              >
+                <div className="w-[132px] h-[132px] rounded-xl overflow-hidden bg-black/50 flex items-center justify-center p-2 border border-white/15 drop-shadow-xl relative group-hover:border-lime-400/50 transition-colors">
+                  {/* Subtle ambient sheen */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-lime-500/10 via-transparent to-white/10 pointer-events-none" />
+                  {currentSvg ? (
+                    <div
+                      className="w-full h-full flex items-center justify-center [&>svg]:w-full [&>svg]:h-full drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)]"
+                      dangerouslySetInnerHTML={{ __html: currentSvg }}
+                    />
+                  ) : (
+                    <div className="text-[10px] text-neutral-500 font-mono">Loading...</div>
+                  )}
+                </div>
+
+                <div className="mt-1.5 text-[10px] font-mono font-medium text-neutral-300 group-hover:text-lime-400 flex items-center gap-1 transition-colors">
+                  <span>Tap for 3D stage</span>
+                  <ChevronUp className="w-3 h-3" />
+                </div>
+              </button>
+
+              {/* Current Style & Color Pill */}
+              <div className="w-full text-center px-1.5 py-0.5 bg-white/10 rounded-lg border border-white/10 text-[10px] font-mono text-neutral-200 truncate">
+                <span className="text-lime-400 font-bold uppercase">{config.style}</span>
+                {" • "}
+                <span className="capitalize">{config.colorPreset}</span>
+              </div>
+            </div>
+          ) : (
+            /* Collapsed Pill Button */
+            <button
+              type="button"
+              onClick={() => setIsMiniPreviewExpanded(true)}
+              className="flex items-center gap-2 p-1.5 pr-2.5 rounded-2xl bg-neutral-900/95 text-white backdrop-blur-xl shadow-xl border border-white/20 active:scale-95 transition-all"
+              title="Expand live preview"
+            >
+              <div className="w-10 h-10 rounded-xl overflow-hidden bg-black/40 flex items-center justify-center p-0.5 border border-white/20 shrink-0">
+                {currentSvg ? (
+                  <div
+                    className="w-full h-full flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"
+                    dangerouslySetInnerHTML={{ __html: currentSvg }}
+                  />
+                ) : null}
+              </div>
+              <div className="text-[10px] font-mono text-left leading-tight">
+                <div className="font-bold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-lime-400 animate-pulse" />
+                  <span>POAP</span>
+                </div>
+                <div className="text-lime-400 text-[9px] flex items-center gap-0.5">
+                  <span>Expand</span>
+                  <Maximize2 className="w-2.5 h-2.5" />
+                </div>
+              </div>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

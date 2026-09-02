@@ -82,7 +82,7 @@ export default function RootLayout({
       >
         <Web3Provider>
           <Navbar />
-          <main className="flex-1 w-full">{children}</main>
+          <main className="flex-1 w-full pb-20 md:pb-0">{children}</main>
           <MobileNav />
           <Footer />
         </Web3Provider>

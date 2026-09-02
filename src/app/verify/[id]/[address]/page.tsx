@@ -76,7 +76,13 @@ export default function VerifiedCertificatePage() {
 
   const handleShareCast = () => {
     const text = `Verified onchain attendance certificate for ${eventData?.name || "Event #" + eventId}! Stored 100% on @base 🔵`;
-    const url = typeof window !== "undefined" ? window.location.href : "";
+    const addr = checksummedAddress || rawAddress;
+    const url =
+      typeof window !== "undefined"
+        ? window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+          ? `https://onchain-poaps-ebon.vercel.app/verify/${eventId}/${addr}`
+          : window.location.href
+        : `https://onchain-poaps-ebon.vercel.app/verify/${eventId}/${addr}`;
     composeFarcasterCast(text, url);
   };
 
@@ -232,8 +238,9 @@ export default function VerifiedCertificatePage() {
             )}
           </button>
           <button
+            type="button"
             onClick={handleShareCast}
-            className="flex-1 py-2.5 px-4 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold hover:bg-neutral-800 dark:hover:bg-neutral-100 flex items-center justify-center gap-1.5 shadow-xs transition-all"
+            className="flex-1 py-2.5 px-4 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold hover:bg-neutral-800 dark:hover:bg-neutral-100 flex items-center justify-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
           >
             <Share2 className="w-3.5 h-3.5" />
             <span>Share to Farcaster</span>
