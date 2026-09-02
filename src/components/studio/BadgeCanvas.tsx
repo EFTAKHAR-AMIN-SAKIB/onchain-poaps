@@ -35,6 +35,7 @@ import {
   Maximize2,
   Minimize2,
   ChevronUp,
+  Shuffle,
 } from "lucide-react";
 
 export interface BadgeCanvasProps {
@@ -45,6 +46,7 @@ export interface BadgeCanvasProps {
   isCustomSvg?: boolean;
   onCustomSvgChange?: (svgCode: string, isCustom: boolean) => void;
   onSvgChange: (svgCode: string, optimization: OptimizationResult) => void;
+  onRandomizeIdea?: () => void;
 }
 
 export function BadgeCanvas({
@@ -55,6 +57,7 @@ export function BadgeCanvas({
   isCustomSvg = false,
   onCustomSvgChange,
   onSvgChange,
+  onRandomizeIdea,
 }: BadgeCanvasProps) {
   const [activeTab, setActiveTab] = useState<"studio" | "upload">(isCustomSvg ? "upload" : "studio");
   const [isMiniPreviewExpanded, setIsMiniPreviewExpanded] = useState(true);
@@ -431,19 +434,31 @@ export function BadgeCanvas({
             <div className="space-y-6">
               {/* 1. Visual Style System */}
               <div id="section-style" className="p-4 sm:p-7 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl sm:rounded-3xl shadow-card space-y-3 scroll-mt-20">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-500 flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-lime-500" />
                     1. VISUAL STYLE SYSTEM ({styles.length})
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleRandomize}
-                    className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-lg transition-colors"
-                  >
-                    <Wand2 className="w-3 h-3 text-lime-500" />
-                    Randomize
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {onRandomizeIdea && (
+                      <button
+                        type="button"
+                        onClick={onRandomizeIdea}
+                        className="text-xs font-semibold text-lime-800 dark:text-lime-300 hover:bg-lime-400/30 dark:hover:bg-lime-900/50 flex items-center gap-1 bg-lime-400/20 dark:bg-lime-950/60 border border-lime-400/60 dark:border-lime-700/60 px-2.5 py-1 rounded-lg transition-all cursor-pointer"
+                      >
+                        <Shuffle className="w-3 h-3 text-lime-600 dark:text-lime-400" />
+                        <span>🎲 Inspire Me</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleRandomize}
+                      className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <Wand2 className="w-3 h-3 text-lime-500" />
+                      <span>Styles</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
@@ -761,9 +776,21 @@ export function BadgeCanvas({
 
               {/* 7. Engraved Typography & Content */}
               <div id="section-typography" className="p-4 sm:p-7 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-2xl sm:rounded-3xl shadow-card space-y-4 scroll-mt-20">
-                <div className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-500 flex items-center gap-1.5">
-                  <Type className="w-3.5 h-3.5 text-neutral-400" />
-                  7. ENGRAVED TYPOGRAPHY & TAGS
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-500 flex items-center gap-1.5">
+                    <Type className="w-3.5 h-3.5 text-neutral-400" />
+                    7. ENGRAVED TYPOGRAPHY & TAGS
+                  </div>
+                  {onRandomizeIdea && (
+                    <button
+                      type="button"
+                      onClick={onRandomizeIdea}
+                      className="text-xs font-semibold text-lime-800 dark:text-lime-300 hover:bg-lime-400/30 dark:hover:bg-lime-900/50 flex items-center gap-1 bg-lime-400/20 dark:bg-lime-950/60 border border-lime-400/60 dark:border-lime-700/60 px-2.5 py-1 rounded-lg transition-all cursor-pointer"
+                    >
+                      <Shuffle className="w-3 h-3 text-lime-600 dark:text-lime-400" />
+                      <span>🎲 Shuffle Idea & Text</span>
+                    </button>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

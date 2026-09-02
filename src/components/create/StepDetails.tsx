@@ -1,8 +1,22 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Input, Textarea } from "@/components/ui/Input";
-import { Calendar, MapPin, Globe, FileText, Tag, Sparkles } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  Globe,
+  FileText,
+  Tag,
+  Sparkles,
+  Wand2,
+  Shuffle,
+  Lightbulb,
+} from "lucide-react";
+import {
+  SAMPLE_CATEGORIES,
+  SampleEventTemplate,
+} from "@/lib/templates/sampleEvents";
 
 export interface EventDetailsForm {
   name: string;
@@ -17,6 +31,8 @@ export interface StepDetailsProps {
   errors: Partial<Record<keyof EventDetailsForm, string>>;
   artworkSvg?: string;
   onChange: (field: keyof EventDetailsForm, value: string) => void;
+  onRandomizeIdea?: (category?: string) => void;
+  onSelectTemplate?: (template: SampleEventTemplate) => void;
 }
 
 export function StepDetails({
@@ -24,18 +40,89 @@ export function StepDetails({
   errors,
   artworkSvg,
   onChange,
+  onRandomizeIdea,
 }: StepDetailsProps) {
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [isShuffling, setIsShuffling] = useState(false);
+
+  const handleTriggerRandomize = (cat?: string) => {
+    const selectedCat = cat || activeCategory;
+    setIsShuffling(true);
+    if (onRandomizeIdea) {
+      onRandomizeIdea(selectedCat);
+    }
+    setTimeout(() => setIsShuffling(false), 400);
+  };
+
+  const handleCategoryClick = (catId: string) => {
+    setActiveCategory(catId);
+    handleTriggerRandomize(catId);
+  };
+
   return (
-    <div className="space-y-8 text-neutral-900 dark:text-neutral-100">
-      {/* Header */}
-      <div className="text-center space-y-1.5 max-w-xl mx-auto">
-        <h2 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-          Event Details & Metadata
-        </h2>
-        <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
-          These details are permanently inscribed into the Base Sepolia contract.
-        </p>
+    <div className="space-y-6 sm:space-y-8 text-neutral-900 dark:text-neutral-100">
+      {/* Header with Title and Quick Randomize Pill */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 max-w-4xl mx-auto text-center sm:text-left">
+        <div className="space-y-1">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+            Event Details & Metadata
+          </h2>
+          <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
+            These details are permanently inscribed into the Base Sepolia smart contract storage.
+          </p>
+        </div>
+
+        {onRandomizeIdea && (
+          <button
+            type="button"
+            onClick={() => handleTriggerRandomize()}
+            className="shrink-0 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-lime-400/20 dark:bg-lime-950/60 border border-lime-400/60 dark:border-lime-700/60 text-lime-800 dark:text-lime-300 hover:bg-lime-400/30 dark:hover:bg-lime-900/50 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xs cursor-pointer"
+          >
+            <Shuffle
+              className={`w-3.5 h-3.5 text-lime-600 dark:text-lime-400 ${
+                isShuffling ? "animate-spin" : ""
+              }`}
+            />
+            <span>🎲 Randomize Idea</span>
+          </button>
+        )}
       </div>
+
+      {/* Interactive Inspiration & Category Chips Bar */}
+      {onRandomizeIdea && (
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-850/80 border border-neutral-200/80 dark:border-neutral-800 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-neutral-500">
+              <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
+              <span>Explore Realistic Sample Ideas by Category:</span>
+            </div>
+            <span className="text-[11px] text-neutral-400 hidden sm:inline">
+              Click any category to load a curated template
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
+            {SAMPLE_CATEGORIES.map((cat) => {
+              const isSelected = activeCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => handleCategoryClick(cat.id)}
+                  className={`px-3 py-1.5 rounded-xl font-medium shrink-0 flex items-center gap-1.5 transition-all cursor-pointer ${
+                    isSelected
+                      ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold shadow-xs"
+                      : "bg-white dark:bg-neutral-800 border border-neutral-200/70 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-750"
+                  }`}
+                >
+                  <span>{cat.icon}</span>
+                  <span>{cat.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 items-start">
         {/* Left Column: Compact Live POAP Plaque Summary */}
@@ -83,14 +170,14 @@ export function StepDetails({
               </span>
             </div>
             <Input
-              placeholder="e.g. ETHGlobal Denver 2026 Opening Night"
+              placeholder="e.g. ETHGlobal Cannes 2026 Opening Night"
               value={formData.name}
               onChange={(e) => onChange("name", e.target.value)}
               maxLength={128}
               error={errors.name}
             />
             <p className="text-[11px] text-neutral-400 mt-1">
-              The primary title stored in the smart contract.
+              The primary title stored in the smart contract and displayed on collector feeds.
             </p>
           </div>
 
@@ -113,6 +200,9 @@ export function StepDetails({
               maxLength={512}
               error={errors.description}
             />
+            <p className="text-[11px] text-neutral-400 mt-1">
+              Provides context to holders when inspecting their onchain badge history.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -142,7 +232,7 @@ export function StepDetails({
                 </span>
               </div>
               <Input
-                placeholder="e.g. Denver, CO or Discord Stage"
+                placeholder="e.g. Cannes, France or Discord Stage"
                 value={formData.location}
                 onChange={(e) => onChange("location", e.target.value)}
                 maxLength={128}
@@ -163,12 +253,15 @@ export function StepDetails({
               </span>
             </div>
             <Input
-              placeholder="https://ethglobal.com/events/denver"
+              placeholder="https://ethglobal.com/events/cannes"
               value={formData.externalUrl}
               onChange={(e) => onChange("externalUrl", e.target.value)}
               maxLength={128}
               error={errors.externalUrl}
             />
+            <p className="text-[11px] text-neutral-400 mt-1">
+              Link to event website, registration page, or project portal.
+            </p>
           </div>
         </div>
       </div>

@@ -13,6 +13,7 @@ export interface StepArtworkProps {
   initialSvg?: string;
   initialTitle?: string;
   onComplete: (svgCode: string, optimization: OptimizationResult) => void;
+  onRandomizeIdea?: () => void;
 }
 
 export function StepArtwork({
@@ -22,6 +23,7 @@ export function StepArtwork({
   onCustomSvgChange,
   initialTitle = "ONCHAIN POAP",
   onComplete,
+  onRandomizeIdea,
 }: StepArtworkProps) {
   const onCompleteRef = useRef(onComplete);
   useEffect(() => {
@@ -43,6 +45,7 @@ export function StepArtwork({
         onCustomSvgChange={onCustomSvgChange}
         initialTitle={initialTitle}
         onSvgChange={handleSvgChange}
+        onRandomizeIdea={onRandomizeIdea}
       />
     </div>
   );

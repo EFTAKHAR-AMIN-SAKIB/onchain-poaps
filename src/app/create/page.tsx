@@ -1,89 +1,44 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { StepArtwork } from "@/components/create/StepArtwork";
 import { StepDetails, EventDetailsForm } from "@/components/create/StepDetails";
 import { StepDistribution, DistributionConfig } from "@/components/create/StepDistribution";
 import { StepPreview } from "@/components/create/StepPreview";
 import { BadgeConfig, generateBadgeSvg } from "@/lib/svg/generator";
 import { optimizeSvg, OptimizationResult } from "@/lib/svg/optimizer";
-import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
+import {
+  SampleEventTemplate,
+  SAMPLE_EVENTS,
+  getRandomEventTemplate,
+  convertTemplateToState,
+} from "@/lib/templates/sampleEvents";
+import { ArrowLeft, ArrowRight, Check, Sparkles, Shuffle } from "lucide-react";
 
 export default function CreatePage() {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
+  const initializedRef = useRef(false);
 
-  // Initial Badge & Event Config
-  const [badgeConfig, setBadgeConfig] = useState<BadgeConfig>({
-    style: "acrylic",
-    preset: "crystal",
-    shape: "medal",
-    material: "crystal",
-    depth: "deep",
-    reflection: "soft",
-    glow: "soft",
-    colorPreset: "lime",
-    customColor: "#84cc16",
-    title: "Testing 1",
-    subtitle: "I WAS THERE",
-    dateOrYear: new Date().getFullYear().toString(),
-    location: "NEW YORK, USA",
-    iconValue: "sparkle",
-    hasInnerDashedRing: true,
-  });
+  // Pick initial template
+  const initialTemplate = SAMPLE_EVENTS[0];
+  const initialState = convertTemplateToState(initialTemplate);
 
+  const [currentTemplateId, setCurrentTemplateId] = useState<string>(initialTemplate.id);
+  const [badgeConfig, setBadgeConfig] = useState<BadgeConfig>(initialState.badgeConfig);
   const [isCustomSvg, setIsCustomSvg] = useState(false);
 
   // Initial SVG state generated from badgeConfig
   const [artworkSvg, setArtworkSvg] = useState<string>(() => {
-    const raw = generateBadgeSvg({
-      style: "acrylic",
-      preset: "crystal",
-      shape: "medal",
-      material: "crystal",
-      depth: "deep",
-      reflection: "soft",
-      glow: "soft",
-      colorPreset: "lime",
-      customColor: "#84cc16",
-      title: "Testing 1",
-      subtitle: "I WAS THERE",
-      dateOrYear: new Date().getFullYear().toString(),
-      location: "NEW YORK, USA",
-      iconValue: "sparkle",
-      hasInnerDashedRing: true,
-    });
+    const raw = generateBadgeSvg(initialState.badgeConfig);
     return optimizeSvg(raw).optimizedSvg;
   });
 
   const [optimization, setOptimization] = useState<OptimizationResult | null>(() => {
-    const raw = generateBadgeSvg({
-      style: "acrylic",
-      preset: "crystal",
-      shape: "medal",
-      material: "crystal",
-      depth: "deep",
-      reflection: "soft",
-      glow: "soft",
-      colorPreset: "lime",
-      customColor: "#84cc16",
-      title: "Testing 1",
-      subtitle: "I WAS THERE",
-      dateOrYear: new Date().getFullYear().toString(),
-      location: "NEW YORK, USA",
-      iconValue: "sparkle",
-      hasInnerDashedRing: true,
-    });
+    const raw = generateBadgeSvg(initialState.badgeConfig);
     return optimizeSvg(raw);
   });
 
-  const [details, setDetails] = useState<EventDetailsForm>({
-    name: "Testing 1",
-    description: "Commemorating active participation, innovation, and attendance at the event.",
-    eventDate: new Date().toISOString().split("T")[0],
-    location: "New York, USA",
-    externalUrl: "https://ethglobal.com",
-  });
-
+  const [details, setDetails] = useState<EventDetailsForm>(initialState.details);
   const [detailsErrors, setDetailsErrors] = useState<Partial<Record<keyof EventDetailsForm, string>>>({});
 
   const [distribution, setDistribution] = useState<DistributionConfig>({
@@ -100,6 +55,36 @@ export default function CreatePage() {
     { num: 3, title: "Distribution", subtitle: "Access & Rules" },
     { num: 4, title: "Review", subtitle: "Onchain Register" },
   ];
+
+  // Apply a sample template across both artwork and metadata
+  const handleApplyTemplate = useCallback((template: SampleEventTemplate) => {
+    setCurrentTemplateId(template.id);
+    const { badgeConfig: newBadgeConfig, details: newDetails } = convertTemplateToState(template);
+    setBadgeConfig(newBadgeConfig);
+    setDetails(newDetails);
+    setIsCustomSvg(false);
+
+    const raw = generateBadgeSvg(newBadgeConfig);
+    const opt = optimizeSvg(raw);
+    setArtworkSvg(opt.optimizedSvg);
+    setOptimization(opt);
+    setDetailsErrors({});
+  }, []);
+
+  // Randomize to a fresh template
+  const handleRandomizeTemplate = useCallback((category?: string) => {
+    const nextTemplate = getRandomEventTemplate(category, currentTemplateId);
+    handleApplyTemplate(nextTemplate);
+  }, [currentTemplateId, handleApplyTemplate]);
+
+  // Randomize initial template once on client mount so user always gets fresh ideas
+  useEffect(() => {
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      const randomInitial = getRandomEventTemplate();
+      handleApplyTemplate(randomInitial);
+    }
+  }, [handleApplyTemplate]);
 
   // Callback when SVG is generated in studio or uploaded
   const handleArtworkChange = useCallback((svgCode: string, opt: OptimizationResult) => {
@@ -218,14 +203,25 @@ export default function CreatePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-8 py-4 sm:py-12 space-y-4 sm:space-y-10 pb-28 text-neutral-900 dark:text-neutral-100">
-      {/* Header matching exact copy requirements */}
-      <div className="text-center space-y-1 sm:space-y-2 max-w-2xl mx-auto">
-        <h1 className="font-extrabold text-2xl sm:text-4xl lg:text-5xl tracking-tight text-neutral-900 dark:text-white uppercase font-sans">
-          CREATE A POAP
-        </h1>
-        <p className="text-xs sm:text-base text-neutral-500 dark:text-neutral-400 font-normal">
-          Design a collectible that lives permanently onchain.
-        </p>
+      {/* Header with Title and Quick Idea Shuffle Action */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto text-center sm:text-left">
+        <div className="space-y-1">
+          <h1 className="font-extrabold text-2xl sm:text-3xl lg:text-4xl tracking-tight text-neutral-900 dark:text-white uppercase font-sans">
+            CREATE A POAP
+          </h1>
+          <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 font-normal">
+            Design a collectible that lives permanently onchain.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => handleRandomizeTemplate()}
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-lime-400/20 dark:bg-lime-950/60 border border-lime-400/60 dark:border-lime-700/60 text-lime-800 dark:text-lime-300 hover:bg-lime-400/30 dark:hover:bg-lime-900/50 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xs cursor-pointer"
+        >
+          <Shuffle className="w-3.5 h-3.5 text-lime-600 dark:text-lime-400" />
+          <span>🎲 Shuffle Sample Idea</span>
+        </button>
       </div>
 
       {/* 4-Step Progress System: Compact single row on mobile, full grid on desktop */}
@@ -330,6 +326,7 @@ export default function CreatePage() {
             onCustomSvgChange={handleCustomSvgChange}
             initialTitle={details.name}
             onComplete={handleArtworkChange}
+            onRandomizeIdea={() => handleRandomizeTemplate()}
           />
         )}
 
@@ -339,6 +336,8 @@ export default function CreatePage() {
             errors={detailsErrors}
             artworkSvg={artworkSvg}
             onChange={handleDetailChange}
+            onRandomizeIdea={handleRandomizeTemplate}
+            onSelectTemplate={handleApplyTemplate}
           />
         )}
 
@@ -364,7 +363,7 @@ export default function CreatePage() {
           {currentStep > 1 ? (
             <button
               onClick={handleBack}
-              className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-750 flex items-center gap-1.5 transition-all shadow-xs"
+              className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-750 flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back</span>
@@ -376,7 +375,7 @@ export default function CreatePage() {
           {currentStep < 4 && (
             <button
               onClick={handleNext}
-              className="px-5 sm:px-6 py-2 sm:py-2.5 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold flex items-center gap-2 hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all shadow-xs ml-auto"
+              className="px-5 sm:px-6 py-2 sm:py-2.5 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold flex items-center gap-2 hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all shadow-xs ml-auto cursor-pointer"
             >
               <span>Next: {steps[currentStep].title}</span>
               <ArrowRight className="w-4 h-4" />
